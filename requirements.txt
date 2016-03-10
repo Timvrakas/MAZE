@@ -1,0 +1,3 @@
+pyyaml
+gphoto2
+-e git+https://github.com/nikhilkalige/flir.git#egg=flir_ptu
