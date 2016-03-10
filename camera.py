@@ -16,6 +16,16 @@ class CameraID(IntEnum):
 
 
 class StereoCamera():
+    """
+    Dual camera representation
+
+    Attributes
+    ----------
+    LEFTNAME : str
+        Ownername of the left camera
+    RIGHTNAME : str
+        Ownername of the right camera
+    """
     LEFTNAME = "LEFT"
     RIGHTNAME = "RIGHT"
 
@@ -23,6 +33,10 @@ class StereoCamera():
         self.context = gp.Context()
 
     def detect_cameras(self):
+        """ Detects the connected cameras and if the ownername matches
+        with `LEFTNAME` or `RIGHTNAME`, it will be stored under the variable
+        `cameras`
+        """
         _cameras = self.context.camera_autodetect()
         if len(_cameras) == 0:
             raise Exception("Unable to find any camera")
@@ -49,6 +63,8 @@ class StereoCamera():
                 self.cameras[CameraID.RIGHT] = camera
 
     def get_summary(self):
+        """ Prints the summary of the cameras as defined by gphoto2
+        """
         for cam in self.cameras:
             text = cam.get_summary(self.context)
             logger.debug(str(text))
@@ -63,6 +79,20 @@ class StereoCamera():
         return value_obj
 
     def get_config(self, name, camera_id):
+        """ Get camera config value
+
+        Parameters
+        ---------
+        name : str
+            The name of the camera config
+        camera_id : enum
+
+        Returns
+        -------
+        value or None
+            Value of the config requested or None if the config
+            does not exist
+        """
         return self._get_config(name, self.cameras[camera_id])
 
     def _get_config(self, name, camera_obj):
@@ -74,6 +104,19 @@ class StereoCamera():
             return None
 
     def get_choices(self, name, camera_id):
+        """ Get valid choices for a config
+
+        Parameters
+        ---------
+        name : str
+            The name of the camera config
+        camera_id : enum
+
+        Returns
+        -------
+        Array
+            Empty array if the config is invalid
+        """
         config = self.cameras[camera_id].get_config(self.context)
         value_obj = self._get_config_obj(config, name)
         try:
@@ -94,6 +137,24 @@ class StereoCamera():
             self.cameras[camera_id].set_config(config, self.context)
 
     def capture_image(self, storage_path, filename=None):
+        """ Capture images on both the cameras
+        The files will stored as below
+            storage_path
+                LEFT
+                    filename
+                RIGHT
+                    filename
+
+        Parameters
+        ---------
+        storage_path : str
+            Location where the files will be stored
+        filename : str
+
+        Returns
+        -------
+        Array : [Left camera filename, Right camera filename]
+        """
         if not os.path.isdir(storage_path):
             raise Exception("Invalid path: {}".format(storage_path))
         logger.debug(os.path.join(storage_path, 'LEFT'))
@@ -112,6 +173,19 @@ class StereoCamera():
         return camera_file_paths
 
     def capture_image_individual(self, camera, storage_path, filename=None):
+        """ Capture image on single camera
+
+        Parameters
+        ----------
+        camera : camera_object
+        storage_path : str
+        filename : str
+
+        Returns
+        -------
+        str
+            The path of the captured image
+        """
         logger.debug("Capturing image on {} camera".format(camera._camera_name))
         file_path = camera.capture(gp.GP_CAPTURE_IMAGE, self.context)
         logger.debug(
@@ -143,10 +217,9 @@ def main():
     s.detect_cameras()
     s.get_summary()
     logger.debug(s.get_config("ownername", CameraID.LEFT))
-    logger.debug(s.get_config("ownername", CameraID.RIGHT))
     logger.debug(s.get_choices("imageformat", CameraID.LEFT))
-    # s.capture_image_individual(CameraID.LEFT)
-    # s.capture_image('/tmp/cam_files')
+    s.capture_image_individual(CameraID.LEFT)
+    s.capture_image('/tmp/cam_files')
     s.quit()
 
 

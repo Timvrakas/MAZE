@@ -6,6 +6,17 @@ import yaml
 
 
 def mosaic(camera, ptu, filepath, azimuth=0, elevation=0):
+    """ Capture a mosaic around the position defined  azimuth and elevation
+
+    Parameters
+    ----------
+    camera : StereoCamera
+        Instance of `StereoCamera`
+    ptu : PTU
+        Instance of `PTU`
+    azimuth : int
+    elevation : int
+    """
     increments = [(0, 0), (15, 0), (15, 0), (0, -15), (-15, 0), (-15, 0)]
     file_name_count = 1
 
