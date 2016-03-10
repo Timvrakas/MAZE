@@ -1,11 +1,8 @@
-import pyexiv2
 import logging
 from camera import StereoCamera, CameraID
 from flir_ptu.ptu import PTU
 import os
-
-
-EXIF_COMMENT_FORMAT = 'AZIMUTH: {}, ELEVATION: {}, PP: {}, TP: {}'
+import yaml
 
 
 def mosaic(camera, ptu, filepath, azimuth=0, elevation=0):
@@ -31,15 +28,21 @@ def mosaic(camera, ptu, filepath, azimuth=0, elevation=0):
         filename = str(file_name_count).zfill(5)
         logger.debug('Current Position:- Az: {}, El: {}, Current File:- {}'.format(curr_az, curr_el, filename))
 
-        camera_files = camera.capture_image(filepath, filename)
+        camera_files = camera.capture_image(filepath, '{}.dat'.format(filename))
+        logger.debug(camera_files)
         pp = ptu.pan()
         tp = ptu.tilt()
 
         for f in camera_files:
-            metadata = pyexiv2.ImageMetadata(f)
-            metadata.read()
-            metadata['Exif.Photo.UserComment'] = EXIF_COMMENT_FORMAT.format(curr_az, curr_el, pp, tp)
-            metadata.write()
+            yaml_path = os.path.splitext(f)[0]
+            contents = {
+                'AZIMUTH': curr_az,
+                'ELEVATION': curr_el,
+                'PP': pp,
+                'TP': tp
+            }
+            with open('{}.lbl'.format(yaml_path), 'w') as lblfile:
+                yaml.dump(contents, lblfile, default_flow_style=False)
 
         file_name_count += 1
 
