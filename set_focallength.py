@@ -22,17 +22,17 @@ class NonBlockingConsole(object):
 
 def echo_focallength(cam, cam_id):
     print()
-    print("FocalLength of {} Camera:- ".format(cam_id.name))
+    print("Stats of {} Camera:- ".format(cam_id.name))
     with NonBlockingConsole() as nbc:
         while True:
-            print('\t ', cam.get_focallength(cam_id))
+            print('\t ', cam.get_stats(cam_id))
             key = nbc.get_data()
             if key == 'y' or key == 'Y':
                 break
 
 
 if __name__ == '__main__':
-    print('Setting the FocalLength of cameras')
+    print('Setting the stats of cameras')
     print("Press `y` key to move to the next camera")
     s = StereoCamera()
     s.detect_cameras()
@@ -40,12 +40,9 @@ if __name__ == '__main__':
     echo_focallength(s, CameraID.LEFT)
     echo_focallength(s, CameraID.RIGHT)
 
-    print("Please wait extracting final focallength values")
-    l = s.get_focallength(CameraID.LEFT)
-    r = s.get_focallength(CameraID.RIGHT)
-
-    print("Final FocalLength of Cameras")
-    print("\t {}:- {}".format(CameraID.LEFT.name, l))
-    print("\t {}:- {}".format(CameraID.RIGHT.name, r))
+    print("Please wait, extracting final stat values")
+    stats = s.get_stats()
+    for index in CameraID:
+        print("{} Camera stats:- {}".format(index.name, stats[index]))
 
     s.quit()
