@@ -155,11 +155,16 @@ class StereoCamera():
         self.set_config("imageformat", old_image_setting, camera_id)
         return focal_len.human_value
 
-    def get_stats(self):
+    def get_stats(self, camera_id=None):
         stats = ['aperture', 'shutterspeed', 'iso', 'focallength']
         stats_array = []
 
-        for index in CameraID:
+        if camera_id is None:
+            indexes = CameraID
+        else:
+            indexes = [camera_id]
+
+        for index in indexes:
             cam = self.cameras[index]
             stats_dict = dict()
             logger.debug("{} Camera Stats:".format(cam._camera_name))
@@ -172,7 +177,6 @@ class StereoCamera():
                 stats_dict[stat] = value
             stats_array.append(stats_dict)
         return stats_array
-
 
     def capture_image(self, storage_path, filename=None):
         """ Capture images on both the cameras
@@ -254,13 +258,14 @@ def main():
 
     s = StereoCamera()
     s.detect_cameras()
-    s.get_summary()
-    logger.debug(s.get_config("ownername", CameraID.LEFT))
-    logger.debug(s.get_choices("imageformat", CameraID.LEFT))
+    # s.get_summary()
+    # logger.debug(s.get_config("ownername", CameraID.LEFT))
+    # logger.debug(s.get_choices("imageformat", CameraID.LEFT))
     # s.capture_image('/tmp/cam_files')
-    f = s.get_focallength(CameraID.LEFT)
-    logger.debug("FocalLength: {}".format(f))
+    # f = s.get_focallength(CameraID.LEFT)
+    # logger.debug("FocalLength: {}".format(f))
     s.get_stats()
+    s.get_stats(CameraID.LEFT)
     s.quit()
 
 
