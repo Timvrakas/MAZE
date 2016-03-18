@@ -5,6 +5,7 @@ import logging
 import sys
 import gphoto2 as gp
 from enum import IntEnum
+import pyexiv2
 
 
 logger = logging.getLogger(__name__)
@@ -136,6 +137,47 @@ class StereoCamera():
             value_obj.set_value(value)
             self.cameras[camera_id].set_config(config, self.context)
 
+    def get_focallength(self, camera_id):
+        filename = "focallength.jpg"
+        curr_dir = os.path.dirname(os.path.realpath(__file__))
+        test_file = os.path.join(curr_dir, filename)
+        if os.path.isfile(test_file):
+            os.remove(test_file)
+
+        old_image_setting = self._get_config("imageformat", self.cameras[camera_id])
+        self.set_config("imageformat", "Small Normal JPEG", camera_id)
+
+        test_file = self.capture_image_individual(self.cameras[camera_id], curr_dir, filename)
+        meta = pyexiv2.ImageMetadata(test_file)
+        meta.read()
+        focal_len = meta['Exif.Photo.FocalLength']
+        os.remove(test_file)
+        self.set_config("imageformat", old_image_setting, camera_id)
+        return focal_len.human_value
+
+    def get_stats(self, camera_id=None):
+        stats = ['aperture', 'shutterspeed', 'iso', 'focallength']
+        stats_array = []
+
+        if camera_id is None:
+            indexes = CameraID
+        else:
+            indexes = [camera_id]
+
+        for index in indexes:
+            cam = self.cameras[index]
+            stats_dict = dict()
+            logger.debug("{} Camera Stats:".format(cam._camera_name))
+            for stat in stats:
+                if stat == 'focallength':
+                    value = self.get_focallength(index)
+                else:
+                    value = self._get_config(stat, cam)
+                logger.debug("\t {}: {}".format(stat, value))
+                stats_dict[stat] = value
+            stats_array.append(stats_dict)
+        return stats_array
+
     def capture_image(self, storage_path, filename=None):
         """ Capture images on both the cameras
         The files will stored as below
@@ -199,6 +241,7 @@ class StereoCamera():
             camera_file = os.path.join(storage_path, filename)
         else:
             camera_file = os.path.join(storage_path, file_path.name)
+        logger.debug("Storing file at {}".format(camera_file))
         cfile.save(camera_file)
         return camera_file
 
@@ -215,11 +258,14 @@ def main():
 
     s = StereoCamera()
     s.detect_cameras()
-    s.get_summary()
-    logger.debug(s.get_config("ownername", CameraID.LEFT))
-    logger.debug(s.get_choices("imageformat", CameraID.LEFT))
-    s.capture_image_individual(CameraID.LEFT)
-    s.capture_image('/tmp/cam_files')
+    # s.get_summary()
+    # logger.debug(s.get_config("ownername", CameraID.LEFT))
+    # logger.debug(s.get_choices("imageformat", CameraID.LEFT))
+    # s.capture_image('/tmp/cam_files')
+    # f = s.get_focallength(CameraID.LEFT)
+    # logger.debug("FocalLength: {}".format(f))
+    s.get_stats()
+    s.get_stats(CameraID.LEFT)
     s.quit()
 
 
