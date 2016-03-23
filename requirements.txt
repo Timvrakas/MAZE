@@ -1,3 +1,8 @@
-pyyaml
-gphoto2
--e git+https://github.com/nikhilkalige/flir.git#egg=flir_ptu
+# Install stereosim itself
+-e .
+
+# Install our development requirements
+flake8
+pytest
+tox
+wheel==0.23.0
