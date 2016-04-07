@@ -1,5 +1,5 @@
 import logging
-from camera import StereoCamera, CameraID
+from stereosim import StereoCamera, CameraID
 from flir_ptu.ptu import PTU
 import os
 import yaml

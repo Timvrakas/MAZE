@@ -1,4 +1,4 @@
-from camera import StereoCamera, CameraID
+from stereosim import StereoCamera, CameraID
 import sys
 import select
 import tty
