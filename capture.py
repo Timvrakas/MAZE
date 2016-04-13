@@ -1,6 +1,16 @@
-import sys, os
+import sys
+import os
+import logging
 from flir_ptu.ptu import PTU
-from camera import StereoCamera, CameraID
+from stereosim.stereosim import StereoCamera, CameraID
+from stereosim.setup_camera_settings import echo_focallength
+
+logger = logging.getLogger()
+handler = logging.StreamHandler()
+formatter = logging.Formatter('%(levelname)s:%(name)s:- %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+logger.setLevel(logging.DEBUG)
 
 
 def point():
@@ -18,24 +28,29 @@ def point():
 
 
 def settings():
-    # TODO: To add `setup_camera_settings.py` here
     print('Setting up camera Parameters')
-    # Worst case Solution
-    os.system(' python3 setup_camera_settings')
-    main()
+    print("Press `y` key to move to the next camera")
+    s = StereoCamera()
+    s.detect_cameras()
+
+    echo_focallength(s, CameraID.LEFT)
+    echo_focallength(s, CameraID.RIGHT)
+
+    print("Please wait, extracting final stat values")
+    stats = s.get_stats()
+    for index in CameraID:
+        print("{} Camera stats:- {}".format(index.name, stats[index]))
+    s.quit()
 
 
 def capture():
-    # TODO: To add `Camera.py` support here
-    file_name_count = 1
     print('Capturing an image...')
-    cam = StereoCamera()
-    cam.detect_cameras()
-    cam.get_summary()
-    cam.set_config('imageformat', 'Large Normal JPEG', CameraID.LEFT)
-    cam.set_config('imageformat', 'Large Normal JPEG', CameraID.RIGHT)
-    filename = str(file_name_count).zfill(5)
-    cam.capture_image('/tmp/cam_files/','IMG_{}.JPG'.format(filename))
+    s = StereoCamera()
+    s.detect_cameras()
+    s.capture_image('/tmp/cam_files')
+    s.get_stats()
+    s.get_stats(CameraID.LEFT)
+    s.quit()
     print('Image Captured.')
     main()
 

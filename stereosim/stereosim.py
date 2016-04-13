@@ -261,7 +261,7 @@ def main():
     # s.get_summary()
     # logger.debug(s.get_config("ownername", CameraID.LEFT))
     # logger.debug(s.get_choices("imageformat", CameraID.LEFT))
-    # s.capture_image('/tmp/cam_files')
+    s.capture_image('/tmp/cam_files')
     # f = s.get_focallength(CameraID.LEFT)
     # logger.debug("FocalLength: {}".format(f))
     s.get_stats()
