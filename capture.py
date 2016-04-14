@@ -10,7 +10,7 @@ handler = logging.StreamHandler()
 formatter = logging.Formatter('%(levelname)s:%(name)s:- %(message)s')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 
 def point():
@@ -29,18 +29,12 @@ def point():
 
 def settings():
     print('Setting up camera Parameters')
-    print("Press `y` key to move to the next camera")
     s = StereoCamera()
     s.detect_cameras()
-
-    echo_focallength(s, CameraID.LEFT)
-    echo_focallength(s, CameraID.RIGHT)
-
-    print("Please wait, extracting final stat values")
     stats = s.get_stats()
-    for index in CameraID:
-        print("{} Camera stats:- {}".format(index.name, stats[index]))
+    print("Press `s` key if you want to get the camera parameters")
     s.quit()
+    main()
 
 
 def capture():
@@ -48,7 +42,6 @@ def capture():
     s = StereoCamera()
     s.detect_cameras()
     s.capture_image('/tmp/cam_files')
-    s.get_stats()
     s.get_stats(CameraID.LEFT)
     s.quit()
     print('Image Captured.')
