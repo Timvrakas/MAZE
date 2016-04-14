@@ -32,7 +32,7 @@ def settings():
     s = StereoCamera()
     s.detect_cameras()
     stats = s.get_stats()
-    print("Press `c` key if you want to get the camera parameters")
+    print("Press `s` key if you want to get the camera parameters")
     s.quit()
     main()
 
