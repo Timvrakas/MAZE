@@ -17,7 +17,8 @@ with open('HISTORY.rst') as history_file:
 requirements = [
     'pyyaml',
     'gphoto2',
-    'py3exiv2'
+    'py3exiv2',
+    'flir_ptu'
 ]
 
 setup(
