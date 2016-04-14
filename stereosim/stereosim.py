@@ -68,7 +68,7 @@ class StereoCamera():
         """
         for cam in self.cameras:
             text = cam.get_summary(self.context)
-            logger.debug(str(text))
+            logger.info(str(text))
 
     def _get_config_obj(self, config, name):
         try:
@@ -167,13 +167,13 @@ class StereoCamera():
         for index in indexes:
             cam = self.cameras[index]
             stats_dict = dict()
-            logger.debug("{} Camera Stats:".format(cam._camera_name))
+            logger.info("{} Camera Stats:".format(cam._camera_name))
             for stat in stats:
                 if stat == 'focallength':
                     value = self.get_focallength(index)
                 else:
                     value = self._get_config(stat, cam)
-                logger.debug("\t {}: {}".format(stat, value))
+                logger.info("\t {}: {}".format(stat, value))
                 stats_dict[stat] = value
             stats_array.append(stats_dict)
         return stats_array
@@ -241,7 +241,7 @@ class StereoCamera():
             camera_file = os.path.join(storage_path, filename)
         else:
             camera_file = os.path.join(storage_path, file_path.name)
-        logger.debug("Storing file at {}".format(camera_file))
+        logger.info("Storing file at {}".format(camera_file))
         cfile.save(camera_file)
         return camera_file
 

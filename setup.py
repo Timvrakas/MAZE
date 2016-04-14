@@ -17,7 +17,6 @@ with open('HISTORY.rst') as history_file:
 requirements = [
     'pyyaml',
     'gphoto2',
-    '-e git+https://github.com/nikhilkalige/flir.git#egg=flir_ptu',
     'py3exiv2'
 ]
 
@@ -36,6 +35,7 @@ setup(
                  'stereosim'},
     include_package_data=True,
     install_requires=requirements,
+    dependency_links=['git+https://github.com/nikhilkalige/flir.git#egg=flir_ptu'],
     license="BSD",
     zip_safe=False,
     keywords='stereosim',
