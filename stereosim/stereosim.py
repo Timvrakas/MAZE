@@ -5,7 +5,7 @@ import logging
 import sys
 import gphoto2 as gp
 from enum import IntEnum
-import pyexiv2
+import exifread
 
 
 logger = logging.getLogger(__name__)
@@ -148,12 +148,15 @@ class StereoCamera():
         self.set_config("imageformat", "Small Normal JPEG", camera_id)
 
         test_file = self.capture_image_individual(self.cameras[camera_id], curr_dir, filename)
-        meta = pyexiv2.ImageMetadata(test_file)
-        meta.read()
-        focal_len = meta['Exif.Photo.FocalLength']
+
+        with open(test_file, 'rb') as f:
+            meta = exifread.process_file(f, details=False)
+
+        focal_len = '{} mm'.format(meta['EXIF FocalLength'])
+
         os.remove(test_file)
         self.set_config("imageformat", old_image_setting, camera_id)
-        return focal_len.human_value
+        return focal_len
 
     def get_stats(self, camera_id=None):
         stats = ['aperture', 'shutterspeed', 'iso', 'focallength']
