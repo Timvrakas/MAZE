@@ -25,6 +25,14 @@ class StereoCalibration(object):
         self.camera_model = self._read_images(self.cal_path)
 
     def _read_images(self, cal_path):
+        """
+        It reads images and find checkerboard patterns in it.
+
+        Returns:
+        camera_model: dict
+            A dictionary containing stereo camera model. Intrinsic and
+            Extrinsic parameters.
+        """
         images_right = glob.glob(cal_path + 'RIGHT/*.JPG')
         images_left = glob.glob(cal_path + 'LEFT/*.JPG')
         images_left.sort()
@@ -72,9 +80,17 @@ class StereoCalibration(object):
         rt, self.M2, self.d2, self.r2, self.t2 = cv2.calibrateCamera(
             self.objpoints, self.imgpoints_r, img_shape, None, None)
 
-        return self.stereo_calibrate(img_shape)
+        return self._stereo_calibrate(img_shape)
 
     def _stereo_calibrate(self, dims):
+        """
+        It performas stereo calibration and makes dictionary of stereo
+        camera calibration model parameters.
+
+        Returns:
+        camera_model: dict
+        A dictionary containing stereo camera model parameters.
+        """
         flags = 0
         # flags |= cv2.CALIB_FIX_INTRINSIC
         flags |= cv2.CALIB_FIX_PRINCIPAL_POINT
