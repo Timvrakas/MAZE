@@ -1,9 +1,8 @@
+# -*- coding: utf-8 -*-
 import sys
-import os
 import logging
 from flir_ptu.ptu import PTU
-from stereosim.stereosim import StereoCamera, CameraID
-from stereosim.setup_camera_settings import echo_focallength
+from stereosim import StereoCamera, CameraID
 
 logger = logging.getLogger()
 handler = logging.StreamHandler()

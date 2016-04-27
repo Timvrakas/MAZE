@@ -89,14 +89,14 @@ class PDSGenerator(object):
             self.img.label['MODEL_COMPONENT_NAME'] = ["CENTER", "AXIS",
                                                       "HORIZONTAL",
                                                       "VERTICAL"]
-            cahv = CAHVmodel.compute('/home/bvnayak/temp/cam_04_21/', 'LEFT')
-            C = compute_coordinates(cahv.cahv['C'], self.yaml_data['AZIMUTH'],
+            cahv = CAHVmodel.compute('LEFT')
+            C = compute_coordinates(cahv.C, self.yaml_data['AZIMUTH'],
                                     self.yaml_data['ELEVATION'])
-            A = compute_coordinates(cahv.cahv['A'], self.yaml_data['AZIMUTH'],
-                                   self.yaml_data['ELEVATION'])
-            H = compute_coordinates(cahv.cahv['H'], self.yaml_data['AZIMUTH'],
+            A = compute_coordinates(cahv.A, self.yaml_data['AZIMUTH'],
                                     self.yaml_data['ELEVATION'])
-            V = compute_coordinates(cahv.cahv['V'], self.yaml_data['AZIMUTH'],
+            H = compute_coordinates(cahv.H, self.yaml_data['AZIMUTH'],
+                                    self.yaml_data['ELEVATION'])
+            V = compute_coordinates(cahv.V, self.yaml_data['AZIMUTH'],
                                     self.yaml_data['ELEVATION'])
             self.img.label['MODEL_COMPONENT_1'] = C.tolist()
             self.img.label['MODEL_COMPONENT_2'] = A.tolist()

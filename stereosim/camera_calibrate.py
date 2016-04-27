@@ -128,10 +128,12 @@ class StereoCalibration(object):
         #     print('Ext1', self.ext1)
         #     print('Ext2', self.ext2)
         # print('')
+        rot_left, _ = cv2.Rodrigues(self.r1[0])
+        rot_right, _ = cv2.Rodrigues(self.r2[0])
 
         camera_model = dict([('M1', M1), ('M2', M2), ('dist1', d1),
-                            ('dist2', d2), ('rvecs1', self.r1),
-                            ('rvecs2', self.r2), ('R', R), ('T', T),
+                            ('dist2', d2), ('rot_left', rot_left),
+                            ('rot_right', rot_right), ('R', R), ('T', T),
                             ('E', E), ('F', F)])
 
         # cv2.destroyAllWindows()
