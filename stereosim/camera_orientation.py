@@ -1,24 +1,19 @@
-from camera_calibrate import StereoCalibration
 from cahvor import compute_CAHVOR
 
 import numpy as np
-import cv2
 import argparse
+import yaml
 
 
 class CAHVmodel(object):
 
     @classmethod
-    def compute(cls, filepath, camera_eye):
+    def compute(cls, camera_eye):
         """
         Generation of CAHV model from photogrammetric parameters.
 
         Parameters
         ----------
-        filepath: filepath containing stereocamera images.
-            Filepath must contain 2 folders 'LEFT' and 'RIGHT
-            e.g. for '/sample/path/LEFT' and 'sample/path/RIGHT',
-            filepath should be '/sample/path/'
         camera_eye: str
             Takes camera eye as an input. ('LEFT' -or- 'RIGHT')
 
@@ -27,15 +22,39 @@ class CAHVmodel(object):
             Returns dict containing computed CAHV parameters from
             photogrammetric model.
         """
-        return cls(filepath, camera_eye)
+        return cls(camera_eye)
 
-    def __init__(self, filepath, camera_eye):
+    def __init__(self, camera_eye):
         # Checkerboard pattern is kept almost vertical to the ground.
         # 1 Image is enough to get CAHVOR info.
-        self._cal = StereoCalibration(filepath)
-        self._cam_model = self._cal.camera_model
+        with open('stereosim_model_v1.yml', 'r') as fp:
+            self._cam_model = yaml.load(fp)
         self._cahv_input = self._get_input(camera_eye)
-        self.cahv = compute_CAHVOR(self._cahv_input)
+        self._cahv = compute_CAHVOR(self._cahv_input)
+
+    @property
+    def C(self):
+        """Returns Center Vector of CAHV model.
+        """
+        return self._cahv['C']
+
+    @property
+    def A(self):
+        """Returns Axis Vector of CAHV model.
+        """
+        return self._cahv['A']
+
+    @property
+    def H(self):
+        """Returns Horizontal Vector of CAHV model.
+        """
+        return self._cahv['H']
+
+    @property
+    def V(self):
+        """Returns Vertical Vector of CAHV model.
+        """
+        return self._cahv['V']
 
     def _get_input(self, camera_eye):
         """
@@ -54,22 +73,15 @@ class CAHVmodel(object):
             'pixel size', 'principal point', 'image size' and 'az' and 'el'
             to be added to get back to origin position of PTU.
         """
-        f = 100.00
+        f = self._cam_model['f']
         # http://www.digicamdb.com/specs/canon_eos-60d/
-        pixelsize = 0.00429
-        image_size = [2048, 3072]
+        pixelsize = self._cam_model['pixelsize']
+        image_size = self._cam_model['image_size']
 
-        if camera_eye == 'LEFT':
-            M = self._cam_model['M1']
-            # Manually measured. May have en error.
-            center = [0.762, 1.4097, -3.3667]
-            rotation, _ = cv2.Rodrigues(self._cam_model['rvecs1'][0])
-        if camera_eye == 'RIGHT':
-            M = self._cam_model['M2']
-            center = [0.762, -1.4097, -3.3667]
-            rotation, _ = cv2.Rodrigues(self._cam_model['rvecs2'][0])
-            relative_rotation = np.array(self._cam_model['R'])
-            rotation = np.dot(relative_rotation, rotation)
+        M = np.asarray(self._cam_model[camera_eye]['intrinsic'])
+        center = self._cam_model[camera_eye]['center']
+        rotation = np.asarray(self._cam_model[camera_eye]['extrinsic'])
+
         principal = np.zeros(2)
         principal[0], principal[1] = M[0][2], M[1][2]
         principal = principal * pixelsize
@@ -84,8 +96,8 @@ class CAHVmodel(object):
                            ('principal', principal),
                            ('f', f),
                            ('rotation_mat', rotation),
-                           ('az', 90.0),
-                           ('el', 0.0)])
+                           ('az', self._cam_model['az_to_fix']),
+                           ('el', self._cam_model['el_to_fix'])])
         return input_dict
 
 
