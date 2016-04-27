@@ -31,27 +31,27 @@ class CAHVmodel(object):
             self._cam_model = yaml.load(fp)
         self._cahv_input = self._get_input(camera_eye)
         self._cahv = compute_CAHVOR(self._cahv_input)
-        self.C = self._get_C()
-        self.A = self._get_A()
-        self.H = self._get_H()
-        self.V = self._get_V()
 
-    def _get_C(self):
+    @property
+    def C(self):
         """Returns Center Vector of CAHV model.
         """
         return self._cahv['C']
 
-    def _get_A(self):
+    @property
+    def A(self):
         """Returns Axis Vector of CAHV model.
         """
         return self._cahv['A']
 
-    def _get_H(self):
+    @property
+    def H(self):
         """Returns Horizontal Vector of CAHV model.
         """
         return self._cahv['H']
 
-    def _get_V(self):
+    @property
+    def V(self):
         """Returns Vertical Vector of CAHV model.
         """
         return self._cahv['V']

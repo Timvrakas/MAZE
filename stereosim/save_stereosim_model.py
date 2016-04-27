@@ -51,16 +51,20 @@ class StereosimModel(object):
         """
         cal = self._cal.camera_model
         if camera_eye == 'LEFT':
-            model = dict([('intrinsic', cal['M1'].tolist()),
-                          ('extrinsic', cal['rot_left'].tolist()),
-                          ('center', [0.762, 1.4097, -3.3667])])
+            model = {
+                'intrinsic': cal['M1'].tolist(),
+                'extrinsic': cal['rot_left'].tolist(),
+                'center': [0.762, 1.4097, -3.3667]
+            }
         if camera_eye == 'RIGHT':
             rotation = cal['rot_right']
             relative_rotation = np.array(cal['R'])
             rotation = np.dot(relative_rotation, rotation)
-            model = dict([('intrinsic', cal['M1'].tolist()),
-                          ('extrinsic', rotation.tolist()),
-                          ('center', [0.762, -1.4097, -3.3667])])
+            model = {
+                'intrinsic': cal['M1'].tolist(),
+                'extrinsic': rotation.tolist(),
+                'center': [0.762, -1.4097, -3.3667]
+            }
         return model
 
     def _save_yaml_file(self):
