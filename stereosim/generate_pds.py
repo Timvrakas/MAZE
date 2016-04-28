@@ -89,7 +89,7 @@ class PDSGenerator(object):
             self.img.label['MODEL_COMPONENT_NAME'] = ["CENTER", "AXIS",
                                                       "HORIZONTAL",
                                                       "VERTICAL"]
-            cahv = CAHVmodel.compute('LEFT')
+            cahv = CAHVmodel.compute(self.yaml_data['Camera'])
             C = compute_coordinates(cahv.C, self.yaml_data['AZIMUTH'],
                                     self.yaml_data['ELEVATION'])
             A = compute_coordinates(cahv.A, self.yaml_data['AZIMUTH'],

@@ -3,8 +3,11 @@ from __future__ import print_function
 import os
 import logging
 import sys
+import math
+import yaml
 import gphoto2 as gp
 from enum import IntEnum
+from flir_ptu.ptu import PTU
 import exifread
 
 
@@ -58,9 +61,11 @@ class StereoCamera():
             ownername = self._get_config("ownername", camera)
             if ownername == self.LEFTNAME:
                 camera._camera_name = self.LEFTNAME
+                camera._camera_id = self.cameras[CameraID.LEFT]
                 self.cameras[CameraID.LEFT] = camera
             elif ownername == self.RIGHTNAME:
                 camera._camera_name = self.RIGHTNAME
+                camera._camera_id = self.cameras[CameraID.RIGHT]
                 self.cameras[CameraID.RIGHT] = camera
 
     def get_summary(self):
@@ -246,7 +251,41 @@ class StereoCamera():
             camera_file = os.path.join(storage_path, file_path.name)
         logger.info("Storing file at {}".format(camera_file))
         cfile.save(camera_file)
+        if filename != "focallength.jpg":
+            self.create_label(camera, camera_file)
         return camera_file
+
+    def create_label(self, camera, file_path):
+        """ Create label for captured image.
+
+        Parameters
+        ----------
+        camera : camera_object
+        file_path : str
+        """
+        with open(file_path, 'rb') as f:
+            meta = exifread.process_file(f, details=False)
+
+        focal_length = '{}'.format(meta['EXIF FocalLength'])
+
+        ptu = PTU("129.219.136.149", 4000)
+        ptu.connect()
+
+        pp = ptu.pan()
+        tp = ptu.tilt()
+        az = math.floor(float(pp) * (92.5714 / 3600))
+        el = math.floor(float(tp) * (46.2857 / 3600))
+        yaml_path = os.path.splitext(file_path)[0]
+        contents = {
+            'AZIMUTH': az,
+            'ELEVATION': el,
+            'PP': float(pp),
+            'TP': float(tp),
+            'f': float(focal_length),
+            'Camera': camera._camera_name
+        }
+        with open('{}.lbl'.format(yaml_path), 'w') as lblfile:
+            yaml.dump(contents, lblfile, default_flow_style=False)
 
     def quit(self):
         for cam in self.cameras:

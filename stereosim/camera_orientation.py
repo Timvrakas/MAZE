@@ -3,6 +3,7 @@ from cahvor import compute_CAHVOR
 import numpy as np
 import argparse
 import yaml
+import os
 
 
 class CAHVmodel(object):
@@ -27,7 +28,9 @@ class CAHVmodel(object):
     def __init__(self, camera_eye):
         # Checkerboard pattern is kept almost vertical to the ground.
         # 1 Image is enough to get CAHVOR info.
-        with open('stereosim_model_v1.yml', 'r') as fp:
+        filepath = os.path.join(os.path.dirname(__file__))
+        full_filepath = os.path.join(filepath, 'stereosim_model_v1.yml')
+        with open(full_filepath, 'r') as fp:
             self._cam_model = yaml.load(fp)
         self._cahv_input = self._get_input(camera_eye)
         self._cahv = compute_CAHVOR(self._cahv_input)
