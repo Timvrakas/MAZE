@@ -1,5 +1,5 @@
 import numpy as np
-from compute_coordinates import compute_coordinates
+from stereosim.compute_coordinates import compute_coordinates
 
 
 def compute_CAHVOR(pinhole_model):

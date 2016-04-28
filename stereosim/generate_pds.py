@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from compute_coordinates import compute_coordinates
-from camera_orientation import CAHVmodel
+from stereosim.compute_coordinates import compute_coordinates
+from stereosim.camera_orientation import CAHVmodel
 import numpy as np
 from planetaryimage import PDS3Image
 from PIL import Image
@@ -113,7 +113,8 @@ class PDSGenerator(object):
         # print(label)
         return label
 
-if __name__ == '__main__':
+
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('filepath', help='String Filepath')
     args = parser.parse_args()
