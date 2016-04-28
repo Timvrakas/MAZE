@@ -41,7 +41,6 @@ def capture():
     s = StereoCamera()
     s.detect_cameras()
     s.capture_image('/tmp/cam_files')
-    s.get_stats(CameraID.LEFT)
     s.quit()
     print('Image Captured.')
     main()
