@@ -1,4 +1,4 @@
-from cahvor import compute_CAHVOR
+from stereosim.cahvor import compute_CAHVOR
 
 import numpy as np
 import argparse

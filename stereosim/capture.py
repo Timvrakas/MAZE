@@ -2,7 +2,7 @@
 import sys
 import logging
 from flir_ptu.ptu import PTU
-from stereosim import StereoCamera, CameraID
+from stereosim.stereosim import StereoCamera, CameraID
 
 logger = logging.getLogger()
 handler = logging.StreamHandler()
