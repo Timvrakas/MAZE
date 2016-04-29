@@ -273,8 +273,8 @@ class StereoCamera():
 
         pp = ptu.pan()
         tp = ptu.tilt()
-        az = math.floor(float(pp) * (92.5714 / 3600))
-        el = math.floor(float(tp) * (46.2857 / 3600))
+        az = ptu.pan_angle()
+        el = ptu.tilt_angle()
         yaml_path = os.path.splitext(file_path)[0]
         contents = {
             'AZIMUTH': az,
