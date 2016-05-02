@@ -1,7 +1,7 @@
 before_script:
     - ln -s /localhome/localadmin/mysql_databases/ ${CI_PROJECT_DIR}
     - rm -rf /tmp/stereosim-venv
-    - virtualenv -p python3 /tmp/stereosim-venv
+    - virtualenv -p python3.5 /tmp/stereosim-venv
     - source /tmp/stereosim-venv/bin/activate
     - pip install -q -U setuptools
     - pip install -q -U wheel
