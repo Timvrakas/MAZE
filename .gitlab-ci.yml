@@ -1,0 +1,16 @@
+before_script:
+    - ln -s /localhome/localadmin/mysql_databases/ ${CI_PROJECT_DIR}
+    - rm -rf /tmp/stereosim-venv
+    - virtualenv -p python3.5 /tmp/stereosim-venv
+    - source /tmp/stereosim-venv/bin/activate
+    - pip install -q -U setuptools
+    - pip install -q -U wheel
+    - pip install -q -U pip
+    - python --version
+    - pip --version
+    - PYTHONWARNINGS="ignore:Unverified HTTPS request" pip install -r requirements.txt
+    - pip freeze
+
+py_test:
+    script:
+        - py.test tests/
