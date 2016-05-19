@@ -1,12 +1,11 @@
+# -*- coding: utf-8 -*-
 from sys import path
 import configparser
+import contextlib
 
 
 class Session:
     CONFIG_FILE = '~/config/stereosim.ini'
-
-    def __init__(self):
-        pass
 
     def setup(self):
         self.config = configparser.ConfigParser()
@@ -34,3 +33,17 @@ class Session:
             count += 1
         else:
             return count
+
+    def teardown(self):
+        with open(self.CONFIG_FILE, 'w') as f:
+            self.config.write(f)
+
+
+@contextlib.contextmanager
+def start_session():
+    session = Session()
+    try:
+        session.setup()
+        yield session
+    finally:
+        session.teardown()
