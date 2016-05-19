@@ -12,10 +12,7 @@ logger.addHandler(handler)
 logger.setLevel(logging.INFO)
 
 
-def point():
-    ptu = PTU("129.219.136.149", 4000)
-    ptu.connect()
-
+def point(cam, ptu):
     az = int(input('Enter Azimuth: '))
     el = int(input('Enter Elevation: '))
     ptu.pan_angle(az)
@@ -25,30 +22,24 @@ def point():
     print('PP: ', pp, '\n', 'TP: ', tp)
 
 
-def settings():
+def settings(cam, ptu):
     print('Setting up camera Parameters')
-    s = StereoCamera()
-    s.detect_cameras()
-    stats = s.get_stats()
+    cam.get_stats()
     print("Press `s` key if you want to get the camera parameters")
-    s.quit()
 
 
-def capture():
+def capture(cam, ptu):
     print('Capturing an image...')
-    s = StereoCamera()
-    s.detect_cameras()
-    s.capture_image('/tmp/cam_files')
-    s.quit()
+    cam.capture_image('/tmp/cam_files')
     print('Image Captured.')
 
 
-def view():
+def view(cam, ptu):
     # TODO: Add Preview Here
     print('view')
 
 
-def command_help():
+def command_help(cam, ptu):
     print('-----------------------------------------------------------------')
     print('                         Commands List                           ')
     print('-----------------------------------------------------------------')
@@ -60,12 +51,13 @@ def command_help():
     print('-----------------------------------------------------------------')
 
 
-def quit():
+def quit(cam, ptu):
+    cam.quit()
     print('quit')
     sys.exit()
 
 
-def test_case(command_input):
+def test_case(command_input, cam, ptu):
     options = {'p': point,
                's': settings,
                'c': capture,
@@ -73,16 +65,22 @@ def test_case(command_input):
                'q': quit,
                '?': command_help}
     try:
-        options[command_input]()
+        options[command_input](cam, ptu)
     except KeyError:
         print('Enter Valid Option')
         command_help()
 
 
 def main():
+    s = StereoCamera()
+    ptu = PTU("129.219.136.149", 4000)
+
+    s.detect_cameras()
+    ptu.connect()
+
     while True:
         command_input = input('> ')
-        test_case(command_input)
+        test_case(command_input, s, ptu)
 
 if __name__ == "__main__":
     main()
