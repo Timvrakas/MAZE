@@ -23,7 +23,6 @@ def point():
     pp = ptu.pan()
     tp = ptu.tilt()
     print('PP: ', pp, '\n', 'TP: ', tp)
-    main()
 
 
 def settings():
@@ -33,7 +32,6 @@ def settings():
     stats = s.get_stats()
     print("Press `s` key if you want to get the camera parameters")
     s.quit()
-    main()
 
 
 def capture():
@@ -43,13 +41,11 @@ def capture():
     s.capture_image('/tmp/cam_files')
     s.quit()
     print('Image Captured.')
-    main()
 
 
 def view():
     # TODO: Add Preview Here
     print('view')
-    main()
 
 
 def command_help():
@@ -62,7 +58,6 @@ def command_help():
     print(' v - To view sample image')
     print(' q - To quit the code')
     print('-----------------------------------------------------------------')
-    main()
 
 
 def quit():
@@ -85,8 +80,9 @@ def test_case(command_input):
 
 
 def main():
-    command_input = input('> ')
-    test_case(command_input)
+    while True:
+        command_input = input('> ')
+        test_case(command_input)
 
 if __name__ == "__main__":
     main()
