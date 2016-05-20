@@ -3,6 +3,8 @@ import sys
 import logging
 from flir_ptu.ptu import PTU
 from stereosim.stereosim import StereoCamera, CameraID
+from stereosim.session import start_session
+
 
 logger = logging.getLogger()
 handler = logging.StreamHandler()
@@ -12,7 +14,7 @@ logger.addHandler(handler)
 logger.setLevel(logging.INFO)
 
 
-def point(cam, ptu):
+def point(cam, ptu, session):
     az = int(input('Enter Azimuth: '))
     el = int(input('Enter Elevation: '))
     ptu.pan_angle(az)
@@ -22,27 +24,36 @@ def point(cam, ptu):
     print('PP: ', pp, '\n', 'TP: ', tp)
 
 
-def settings(cam, ptu):
+def settings(cam, ptu, session):
     print('Setting up camera Parameters')
     cam.get_stats()
     print("Press `s` key if you want to get the camera parameters")
 
 
-def capture(cam, ptu):
+def capture(cam, ptu, session):
     print('Capturing an image...')
-    cam.capture_image('/tmp/cam_files')
+    file_path = session.get_folder_path()
+    file_name = session.get_file_name()
+    cam.capture_image(file_path, file_name)
     print('Image Captured.')
+    session.image_count(inc=True)
 
 
-def view(cam, ptu):
+def view(cam, ptu, session):
     # TODO: Add Preview Here
     print('view')
 
 
-def command_help(cam, ptu):
+def session(cam, ptu, session):
+    no = session.new_session()
+    print("New session with no: {} started".format(no))
+
+
+def command_help(cam, ptu, session):
     print('-----------------------------------------------------------------')
     print('                         Commands List                           ')
     print('-----------------------------------------------------------------')
+    print(' n - To start new session')
     print(' p - To set PTU direction')
     print(' c - To capture an image')
     print(' s - To set camera parameteres (focal length, ISO, Aperture etc.)')
@@ -51,24 +62,25 @@ def command_help(cam, ptu):
     print('-----------------------------------------------------------------')
 
 
-def quit(cam, ptu):
+def quit(cam, ptu, session):
     cam.quit()
     print('quit')
     sys.exit()
 
 
-def test_case(command_input, cam, ptu):
-    options = {'p': point,
+def test_case(command_input, cam, ptu, ses_obj):
+    options = {'n': session,
+               'p': point,
                's': settings,
                'c': capture,
                'v': view,
                'q': quit,
                '?': command_help}
     try:
-        options[command_input](cam, ptu)
+        options[command_input](cam, ptu, ses_obj)
     except KeyError:
         print('Enter Valid Option')
-        command_help()
+        command_help(cam, ptu, session)
 
 
 def main():
@@ -78,9 +90,11 @@ def main():
     s.detect_cameras()
     ptu.connect()
 
-    while True:
-        command_input = input('> ')
-        test_case(command_input, s, ptu)
+    with start_session() as session:
+        while True:
+            command_input = input('> ')
+            test_case(command_input, s, ptu, session)
+
 
 if __name__ == "__main__":
     main()
