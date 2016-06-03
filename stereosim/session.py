@@ -13,7 +13,8 @@ class Session:
         self.config_file_path = os.path.join(os.path.expanduser('~'), self.CONFIG_FILE)
 
         if not os.path.exists(self.folder_path):
-            raise Exception("Folder does not exist")
+            os.makedirs(self.folder_path)
+
 
     def setup(self):
         self.config = configparser.ConfigParser()
