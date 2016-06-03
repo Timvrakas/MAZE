@@ -16,7 +16,9 @@ Features
 
 Quickstart
 ----------
-The example below will walk you through setting up a Python virtual environment and installing the necessary software as well as a few handy extras.The example assumes you have Python3, virtualenv, and pip installed on your system.
+The example below will walk you through setting up a Python virtual environment
+and installing the necessary software as well as a few handy extras. The example
+assumes you have Python3, virtualenv, and pip installed on your system.
 
 SSH to raspberry pi, create and activate a virtual environment::
 
@@ -24,8 +26,8 @@ SSH to raspberry pi, create and activate a virtual environment::
   virtualenv -p python3 venv
   source venv/bin/activate
 
-Run setup.py, upgrade pip, then pip install the package and IPython notebook and matplotlib
-to help display the image::
+Run setup.py, upgrade pip, then pip install the package and IPython notebook and
+matplotlib to help display the image::
 
   python setup.py develop
   pip install -U pip
@@ -44,7 +46,7 @@ This examples will show you the procedure to capture an Image::
      v - To view sample image
      q - To quit the code
     -----------------------------------------------------------------
-    > 
+    >
 
 These commands help performing the tasks listed above.
 
@@ -52,7 +54,8 @@ This example will show you the procedure to generate PDS file::
 
   $ generate_pds /path/to/captured/JPG/file
 
-This example will show you the procedure of stereocamera calibration and saving the calibration model::
+This example will show you the procedure of stereocamera calibration and saving
+the calibration model::
 
   $ python save_stereosim_model.py /path/to/captured/checkerboard/images/
 
