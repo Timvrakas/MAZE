@@ -13,8 +13,10 @@ class Session:
         self.config_file_path = os.path.join(os.path.expanduser('~'), self.CONFIG_FILE)
 
         if not os.path.exists(self.folder_path):
-            os.makedirs(self.folder_path)
-
+            try:
+                os.makedirs(self.folder_path)
+            except:
+                print("%s doesn't exist and couldn't be created." % self.folder_path)
 
     def setup(self):
         self.config = configparser.ConfigParser()
@@ -52,7 +54,7 @@ class Session:
             return int(count)
 
     def get_file_name(self):
-        return "{:03d}_{:04d}.IMG".format(self.session_number(), self.image_count())
+        return "{:03d}_{:04d}.jpg".format(self.session_number(), self.image_count())
 
     def get_folder_path(self, new=False):
         if new:

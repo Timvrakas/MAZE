@@ -57,7 +57,7 @@ def command_help(cam, ptu, session):
     print(' p - To set PTU direction')
     print(' c - To capture an image')
     print(' s - To set camera parameteres (focal length, ISO, Aperture etc.)')
-    print(' v - To view sample image')
+    print(' v - To view sample image *NOT IMPLEMENTED*')
     print(' q - To quit the code')
     print('-----------------------------------------------------------------')
 

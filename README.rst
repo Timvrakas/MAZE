@@ -40,6 +40,7 @@ This examples will show you the procedure to capture an Image::
     -----------------------------------------------------------------
                              Commands List
     -----------------------------------------------------------------
+     n - To start new session
      p - To set PTU direction
      c - To capture an image
      s - To set camera parameteres (focal length, ISO, Aperture etc.)
