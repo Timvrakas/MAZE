@@ -80,7 +80,7 @@ class Session:
 
 
 @contextlib.contextmanager
-def start_session(folder_path="/tmp/stereosim"):
+def start_session(folder_path="/srv/stereosim"):
     session = Session(folder_path)
     try:
         session.setup()
