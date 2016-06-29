@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 import sys
+import os
 import logging
+import numpy as np
+
+import yaml
 from flir_ptu.ptu import PTU
 from stereosim.stereosim import StereoCamera, CameraID
 from stereosim.session import start_session
@@ -42,9 +46,11 @@ def capture(cam, ptu, session):
     print('Capturing an image...')
     file_path = session.get_folder_path()
     file_name = session.get_file_name()
-    cam.capture_image(file_path, file_name)
+    camera_file_paths = cam.capture_image(file_path, file_name)
     print('Image Captured.')
     session.image_count(inc=True)
+
+    return camera_file_paths
 
 def pos_arr(pos):
     '''Make an (x,2) position array from a comma seperated list 
@@ -69,7 +75,7 @@ def pos_arr(pos):
     '''
     lst = list(map(int, pos.split(',')))
     length = len(lst)
-    while (num % 2) != 0:
+    if length % 2 != 0:
         print('{} data points provided, an even number of az and el data points is required please try again.'.format(length))
     arr = np.asarray(lst)
     arr = arr.reshape((len(lst)/2, 2))
@@ -109,16 +115,15 @@ def mosaic(cam, ptu, session, positions):
         curr_az += pos[0]
         curr_el += pos[1]
 
-        point(cam, ptu, session, az=az, el=el)
+        point(cam, ptu, session, az=curr_az, el=curr_el)
         filename = str(file_name_count).zfill(5)
         logger.info('Current Position:- Az: {}, El: {}, Current File:- {}'.format(curr_az, curr_el, filename))
         
         camera_files = capture(cam, ptu, session)
         logger.info(camera_files)
 
-        # removed because they are in point()
-        # pp = ptu.pan()
-        # tp = ptu.tilt()
+        pp = ptu.pan()
+        tp = ptu.tilt()
 
         for f in camera_files:
             yaml_path = os.path.splitext(f)[0]
@@ -191,11 +196,11 @@ def main():
         session_type = input('regular_session or mosaic_session? ')
 
     with start_session() as session:
-        if session_type==regular_session:
+        if session_type=='regular_session':
                 while True:
                     command_input = input('> ')
                     test_case(command_input, s, ptu, session)
-        elif session_type==mosaic_session:
+        elif session_type=='mosaic_session':
             while True:
                     positions = input('Input comma separated list of az/el positions for mosaic, enter "feeling lucky" for default positions: ')
                     # Add a default option that uses predetermined steps.
@@ -203,7 +208,7 @@ def main():
                         positions = 0,0,15,0,15,0,0,-15,-15,0,-15,0
                         print('positions : (0, 0), (15, 0), (15, 0), (0, -15), (-15, 0), (-15, 0)')
                     positions = pos_arr(positions)
-                    mosaic(cam, ptu, session, positions)
+                    mosaic(s, ptu, session, positions)
         
 
 if __name__ == "__main__":
