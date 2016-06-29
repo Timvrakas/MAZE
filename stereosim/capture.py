@@ -202,9 +202,9 @@ def main():
                     test_case(command_input, s, ptu, session)
         elif session_type=='mosaic_session':
             while True:
-                    positions = input('Input comma separated list of az/el positions for mosaic, enter "feeling lucky" for default positions: ')
+                    positions = input('Input comma separated list of az/el positions for mosaic, enter "Default" for default positions: ')
                     # Add a default option that uses predetermined steps.
-                    if positions == 'default':
+                    if positions == 'Default':
                         positions = 0,0,15,0,15,0,0,-15,-15,0,-15,0
                         print('positions : (0, 0), (15, 0), (15, 0), (0, -15), (-15, 0), (-15, 0)')
                     positions = pos_arr(positions)
