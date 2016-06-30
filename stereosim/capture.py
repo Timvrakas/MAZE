@@ -19,8 +19,8 @@ logger.setLevel(logging.INFO)
 
 class CaptureSession(object):
 
-	def __init__(self, s, ptu, session):
-		self.cam = s
+	def __init__(self, cam, ptu, session):
+		self.cam = cam
 		self.ptu = ptu
 		self.session = session
 
@@ -193,10 +193,10 @@ class CaptureSession(object):
 
 
 def main():
-    s = StereoCamera()
+    cam = StereoCamera()
     ptu = PTU("129.219.136.149", 4000)
 
-    s.detect_cameras()
+    cam.detect_cameras()
     ptu.connect()
 
     session_type = input('Begin regular_session or mosaic_session? ')
@@ -205,7 +205,7 @@ def main():
         session_type = input('regular_session or mosaic_session? ')
 
     with start_session() as session:
-        cap_ses = CaptureSession(s, ptu, session)
+        cap_ses = CaptureSession(cam, ptu, session)
         if session_type=='regular_session':
                 while True:
                     command_input = input('> ')
