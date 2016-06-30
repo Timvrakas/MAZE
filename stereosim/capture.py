@@ -27,7 +27,7 @@ class CaptureSession(object):
 
 	def point(self,az=None, el=None):
 		if az==None and el==None:
-    		az = int(input('Enter Azimuth: '))
+			az = int(input('Enter Azimuth: '))
     		el = int(input('Enter Elevation: '))
 		elif az==None and el!=None:
     		el = el
@@ -178,13 +178,13 @@ class CaptureSession(object):
 
 
 	def test_case(self, command_input):
-        options = {'n': self.session,
-                'p': self.point,
-                's': self.settings,
-                'c': self.capture,
-                'v': self.view,
-                'q': self.quit,
-                '?': self.command_help}
+		options = {'n': self.session,
+				   'p': self.point,
+                   's': self.settings,
+                   'c': self.capture,
+                   'v': self.view,
+                   'q': self.quit,
+                   '?': self.command_help}
         try:
                 options[command_input]()
         except KeyError:
@@ -215,11 +215,7 @@ def main():
                     positions = input('Input comma separated list of az/el positions for mosaic, enter "Default" for default positions: ')
                     # Add a default option that uses predetermined steps.
                     if positions == 'Default':
-<<<<<<< HEAD
                         positions = '0,0,15,0,15,0,0,-15,-15,0,-15,0'
-=======
-                        positions = 0,0,15,0,15,0,0,-15,-15,0,-15,0
->>>>>>> 1d94c0ba7f429a9fc07f3265ce26020f7705a213
                         print('positions : (0, 0), (15, 0), (15, 0), (0, -15), (-15, 0), (-15, 0)')
                     positions = cap_ses.pos_arr(positions)
                     cap_ses.mosaic(positions)
