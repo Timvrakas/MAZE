@@ -19,146 +19,146 @@ logger.setLevel(logging.INFO)
 
 class CaptureSession(object):
 
-	def __init__(self, cam, ptu, session):
-		self.cam = cam
-		self.ptu = ptu
-		self.session = session
+    def __init__(self, cam, ptu, session):
+        self.cam = cam
+        self.ptu = ptu
+        self.session = session
 
 
-	def point(self,az=None, el=None):
-		if az==None and el==None:
-			az = int(input('Enter Azimuth: '))
-    		el = int(input('Enter Elevation: '))
-		elif az==None and el!=None:
-    		el = el
-    		az = int(input('Elevation : {} \n Enter Azimuth: '.format(el)))
-		elif az!=None and el==None:
-    		az = az
-    		el = int(input('Azimuth : {} \n Enter Elevation: '.format(az)))
+    def point(self,az=None, el=None):
+        if az==None and el==None:
+            az = int(input('Enter Azimuth: '))
+            el = int(input('Enter Elevation: '))
+        elif az==None and el!=None:
+            el = el
+            az = int(input('Elevation : {} \n Enter Azimuth: '.format(el)))
+        elif az!=None and el==None:
+            az = az
+            el = int(input('Azimuth : {} \n Enter Elevation: '.format(az)))
 
-		self.ptu.pan_angle(az)
-		self.ptu.tilt_angle(el)
-		pp = self.ptu.pan()
-		tp = self.ptu.tilt()
-		print('PP: ', pp, '\n', 'TP: ', tp)
-
-
-	def settings(self):
-		print('Setting up camera Parameters')
-		self.cam.get_stats()
-		print("Press `s` key if you want to get the camera parameters")
+        self.ptu.pan_angle(az)
+        self.ptu.tilt_angle(el)
+        pp = self.ptu.pan()
+        tp = self.ptu.tilt()
+        print('PP: ', pp, '\n', 'TP: ', tp)
 
 
-	def capture(self):
-		print('Capturing an image...')
-		file_path = self.session.get_folder_path()
-		file_name = self.session.get_file_name()
-		camera_file_paths = self.cam.capture_image(file_path, file_name)
-		print('Image Captured.')
-		self.session.image_count(inc=True)
-
-		return camera_file_paths
+    def settings(self):
+        print('Setting up camera Parameters')
+        self.cam.get_stats()
+        print("Press `s` key if you want to get the camera parameters")
 
 
-	def pos_arr(self, pos):
-		'''Make an (x,2) position array from a comma seperated list
+    def capture(self):
+        print('Capturing an image...')
+        file_path = self.session.get_folder_path()
+        file_name = self.session.get_file_name()
+        camera_file_paths = self.cam.capture_image(file_path, file_name)
+        print('Image Captured.')
+        self.session.image_count(inc=True)
+
+        return camera_file_paths
+
+
+    def pos_arr(self, pos):
+        '''Make an (x,2) position array from a comma seperated list
         where each row provides az and el data. There must be an even number of values.
         Used when mosaic_session is chosen.
 
-		Parameters
-		----------
+        Parameters
+        ----------
 
-   		pos : input string
-    	comma seperated list of az and el.
-    	ex: az,el,az,el,az,el.
-    
-		Returns
-		-------
+        	pos : input string
+        comma seperated list of az and el.
+        ex: az,el,az,el,az,el.
 
-		pos_arr : array
-    	An (x,2) array where column 0 is az and column 1 is el.
-    	ex: [(az, el),
+        Returns
+        -------
+
+        pos_arr : array
+        An (x,2) array where column 0 is az and column 1 is el.
+        ex: [(az, el),
          	(az, el),
          	(az, el)]
-		'''
-		lst = list(map(int, pos.split(',')))
-		length = len(lst)
-		if length % 2 != 0:
-    		print('{} data points provided, an even number of az and el data points is required please try again.'.format(length))
-		arr = np.asarray(lst)
-		arr = arr.reshape((len(lst)/2, 2))
+        '''
+        lst = list(map(int, pos.split(',')))
+        length = len(lst)
+        if length % 2 != 0:
+        	print('{} data points provided, an even number of az and el data points is required please try again.'.format(length))
+        arr = np.asarray(lst)
+        arr = arr.reshape((len(lst)/2, 2))
 
-		return arr
+        return arr
 
 
-	def mosaic(self, positions):
-		""" Capture a mosiac based on the positions provided
+    def mosaic(self, positions):
+        """ Capture a mosiac based on the positions provided
 
-		Parameters
-		----------
+        Parameters
+        ----------
 
-		cam : StereoCamera
-    		Instance of 'StereoCamera'
-		ptu : PTU
-    		Instance of 'PTU'
-		positions : array
-    		Azimuth/elevation locations to image.
-    	**NOTE: Each consecutive az or el value is added to the previous.
-    	Ex: if 1st az is 10, and 2nd az is 12, after reading in 2nd az the position will be 22.
+        cam : StereoCamera
+        	Instance of 'StereoCamera'
+        ptu : PTU
+        	Instance of 'PTU'
+        positions : array
+        	Azimuth/elevation locations to image.
+        **NOTE: Each consecutive az or el value is added to the previous.
+        Ex: if 1st az is 10, and 2nd az is 12, after reading in 2nd az the position will be 22.
 
-		Returns
-		-------
+        Returns
+        -------
             TBD :
             """
-		file_name_count = 1
+        file_name_count = 1
 
             # Move to the initial position
-		self.ptu.pan_angle(positions[0][0])
-		self.ptu.tilt_angle(positions[0][1])
+        self.ptu.pan_angle(positions[0][0])
+        self.ptu.tilt_angle(positions[0][1])
 
-		curr_az = positions[0][0]
-		curr_el = positions[0][1]
-		for pos in positions:
-			curr_az += pos[0]
-			curr_el += pos[1]
+        curr_az = positions[0][0]
+        curr_el = positions[0][1]
+        for pos in positions:
+            curr_az += pos[0]
+            curr_el += pos[1]
 
-			self.point(az=curr_az, el=curr_el)
-			filename = str(file_name_count).zfill(5)
-			logger.info('Current Position:- Az: {}, El: {}, Current File:- {}'.format(curr_az, curr_el, filename))
+            self.point(az=curr_az, el=curr_el)
+            filename = str(file_name_count).zfill(5)
+            logger.info('Current Position:- Az: {}, El: {}, Current File:- {}'.format(curr_az, curr_el, filename))
 
-			camera_files = self.capture()
-			logger.info(camera_files)
+            camera_files = self.capture()
+            logger.info(camera_files)
 
-			pp = self.ptu.pan()
-			tp = self.ptu.tilt()
+            pp = self.ptu.pan()
+            tp = self.ptu.tilt()
 
-			for f in camera_files:
-				yaml_path = os.path.splitext(f)[0]
-				print('yaml_path:',yaml_path)
-				contents = {
-					'AZIMUTH': curr_az,
-					'ELEVATION': curr_el,
-					'PP': pp,
-					'TP': tp
-				}
-				#with open('{}.lbl'.format(yaml_path), 'w') as lblfile:
-				#	print('lblfile:',lblfile)
-				#	yaml.dump(contents, lblfile, default_flow_style=False)
+            for f in camera_files:
+                yaml_path = os.path.splitext(f)[0]
+                print('yaml_path:',yaml_path)
+                contents = {
+                        'AZIMUTH': curr_az,
+                        'ELEVATION': curr_el,
+                        'PP': pp,
+                        'TP': tp
+                }
+                #with open('{}.lbl'.format(yaml_path), 'w') as lblfile:
+                #	print('lblfile:',lblfile)
+                #	yaml.dump(contents, lblfile, default_flow_style=False)
 
-				file_name_count += 1
-
-
-	def view(self):
-		# TODO: Add Preview Here
-		print('view')
+                file_name_count += 1
 
 
-	def session(self):
-		no = self.session.new_session()
-		print("New session with no: {} started".format(no))
+    def view(self):
+        # TODO: Add Preview Here
+        print('view')
 
 
-	def command_help(self):
+    def session(self):
+        no = self.session.new_session()
+        print("New session with no: {} started".format(no))
+
+
+    def command_help(self):
         print('-----------------------------------------------------------------')
         print('                         Commands List                           ')
         print('-----------------------------------------------------------------')
@@ -171,15 +171,15 @@ class CaptureSession(object):
         print('-----------------------------------------------------------------')
 
 
-	def quit(self):
+    def quit(self):
         self.cam.quit()
         print('quit')
         sys.exit()
 
 
-	def test_case(self, command_input):
-		options = {'n': self.session,
-				   'p': self.point,
+    def test_case(self, command_input):
+        options = {'n': self.session,
+                   'p': self.point,
                    's': self.settings,
                    'c': self.capture,
                    'v': self.view,
