@@ -152,7 +152,9 @@ class StereoCamera():
         old_image_setting = self._get_config("imageformat", self.cameras[camera_id])
         self.set_config("imageformat", "Small Normal JPEG", camera_id)
 
-        test_file = self.capture_image_individual(self.cameras[camera_id], curr_dir, filename)
+        onboard_path = self.trigger_capture(self.cameras[camera_id])
+        test_file = self.get_image_from_camera(self.cameras[camera_id], onboard_path,
+                                               curr_dir, filename)
 
         with open(test_file, 'rb') as f:
             meta = exifread.process_file(f, details=False)
@@ -214,20 +216,43 @@ class StereoCamera():
         if not os.path.isdir(os.path.join(storage_path, 'RIGHT')):
             os.mkdir(os.path.join(storage_path, 'RIGHT'))
 
-        camera_file_paths = []
+        stored_file_paths = []
+        camera_onboard_paths = []
         for cam in self.cameras:
+            camera_onboard_paths.append(self.trigger_capture(cam))
+
+        for cam, location in zip(self.cameras, camera_onboard_paths):
             folder = os.path.join(storage_path, cam._camera_name)
-            cpath = self.capture_image_individual(cam, folder, filename)
-            camera_file_paths.append(cpath)
+            cpath = self.get_image_from_camera(cam, location, folder, filename)
+            stored_file_paths.append(cpath)
 
-        return camera_file_paths
+        return stored_file_paths
 
-    def capture_image_individual(self, camera, storage_path, filename=None):
+    def trigger_capture(self, camera):
+        """ Trigger image capture
+
+        Parameters
+        ----------
+        camera : camera_object
+
+        Returns
+        -------
+        str
+            The path of the captured image on the camera
+        """
+        logger.debug("Triggering image capture on {} camera".format(camera._camera_name))
+        file_path = camera.capture(gp.GP_CAPTURE_IMAGE, self.context)
+        logger.debug(
+            "File path: {}/{}".format(file_path.folder, file_path.name))
+        return file_path
+
+    def get_image_from_camera(self, camera, camera_file_path, storage_path, filename=None):
         """ Capture image on single camera
 
         Parameters
         ----------
         camera : camera_object
+        camera_file_path : path of the image on the camera
         storage_path : str
         filename : str
 
@@ -236,19 +261,15 @@ class StereoCamera():
         str
             The path of the captured image
         """
-        logger.debug("Capturing image on {} camera".format(camera._camera_name))
-        file_path = camera.capture(gp.GP_CAPTURE_IMAGE, self.context)
-        logger.debug(
-            "File path: {}/{}".format(file_path.folder, file_path.name))
         logger.debug("Transferring file")
-        cfile = camera.file_get(
-            file_path.folder, file_path.name, gp.GP_FILE_TYPE_NORMAL, self.context)
+        cfile = camera.file_get(camera_file_path.folder, camera_file_path.name,
+                                gp.GP_FILE_TYPE_NORMAL, self.context)
 
         camera_file = ''
         if filename:
             camera_file = os.path.join(storage_path, filename)
         else:
-            camera_file = os.path.join(storage_path, file_path.name)
+            camera_file = os.path.join(storage_path, camera_file_path.name)
         logger.info("Storing file at {}".format(camera_file))
         cfile.save(camera_file)
         if filename != "focallength.jpg":
