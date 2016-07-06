@@ -291,11 +291,17 @@ class StereoCamera():
 
         ptu = PTU("129.219.136.149", 4000)
         ptu.connect()
+        if ptu.stream.is_connected:
+            pp = ptu.pan()
+            tp = ptu.tilt()
+            az = ptu.pan_angle()
+            el = ptu.tilt_angle()
+        else:
+            pp = None
+            tp = None
+            az = None
+            el = None
 
-        pp = ptu.pan()
-        tp = ptu.tilt()
-        az = ptu.pan_angle()
-        el = ptu.tilt_angle()
         yaml_path = os.path.splitext(file_path)[0]
         contents = {
             'AZIMUTH': az,
