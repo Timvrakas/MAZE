@@ -56,8 +56,8 @@ class CaptureSession(object):
         return camera_file_paths
 
     def pos_arr(self, pos):
-        '''Make an (x,2) position array from a comma seperated list
-        where each row provides az and el data.
+        """Make an (x,2) position array from a comma seperated list.
+        Each row provides az and el data.
         There must be an even number of values.
         Used when mosaic_session is chosen.
 
@@ -76,7 +76,7 @@ class CaptureSession(object):
         ex: [(az, el),
             (az, el),
             (az, el)]
-        '''
+        """
         lst = list(map(int, pos.split(',')))
         length = len(lst)
         if length % 2 != 0:
@@ -88,7 +88,7 @@ class CaptureSession(object):
         return arr
 
     def mosaic(self):
-        """ Capture a mosiac based on the positions provided
+        """ Capture a mosiac based on the positions provided.
 
         Parameters
         ----------
@@ -120,7 +120,7 @@ class CaptureSession(object):
         if positions == 'q':
             self.quit()
         positions = self.pos_arr(positions)
-        
+
         file_name_count = 1
 
         # Move to the origin (0,0)
