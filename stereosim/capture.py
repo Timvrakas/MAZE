@@ -103,10 +103,7 @@ class CaptureSession(object):
         Ex: if 1st az is 10, and 2nd az is 12, after reading in 2nd az
         the position will be 22.
 
-        Returns
-        -------
-            TBD :
-        """
+       """
 
         print('-' * 50)
         positions = input("\n Enter comma separated list of az/el positions for mosaic"
@@ -117,6 +114,7 @@ class CaptureSession(object):
             positions = '0,0,15,0,15,0,0,-15,-15,0,-15,0'
             print('positions : (0, 0), (15, 0), (15, 0),'
                   '(0, -15), (-15, 0), (-15, 0)')
+            print('-' * 50)
         if positions == 'q':
             self.quit()
         positions = self.pos_arr(positions)
@@ -180,10 +178,10 @@ class CaptureSession(object):
                    'q': self.quit,
                    '?': self.command_help}
         try:
-                options[command_input]()
+            options[command_input]()
         except KeyError:
-                print('Enter Valid Option')
-                self.command_help()
+            print('Enter Valid Option')
+            self.command_help()
 
 
 def main():
@@ -196,13 +194,8 @@ def main():
     with start_session() as session:
         cap_ses = CaptureSession(cam, ptu, session)
         while True:
-                    command_input = input('> ')
-                    cap_ses.test_case(command_input)
+            command_input = input('> ')
+            cap_ses.test_case(command_input)
 
 if __name__ == "__main__":
-    logger = logging.getLogger()
-    handler = logging.StreamHandler()
-    logger.addHandler(handler)
-    logger.setLevel(logging.DEBUG)
-
     main()
