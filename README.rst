@@ -20,9 +20,8 @@ System Setup
 Stereosim uses the Linux `gphoto` package to interface with the cameras.  Users
 will probably have to install the development versions of the following packages:
 
-```
-sudo apt-get install gphoto libgphoto2-dev python3-dev
-```
+  sudo apt-get install gphoto libgphoto2-dev python3-dev
+
 
 Depending on exactly which python version is in use, you might need a different
 python `-dev` package.
