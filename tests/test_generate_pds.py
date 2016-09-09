@@ -98,4 +98,4 @@ def test_generate_pds_with_no_label():
     with pytest.raises(KeyError):
         image.label['GEOMETRIC_CAMERA_MODEL']['MODEL_COMPONENT_1']
 
-    os.remove(os.path.splitext(filename_right)[0] + '.IMG')
+    os.remove(os.path.splitext(filename_nolabel)[0] + '.IMG')
