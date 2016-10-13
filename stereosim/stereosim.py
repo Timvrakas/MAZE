@@ -223,6 +223,11 @@ class StereoCamera():
 
         for cam, location in zip(self.cameras, camera_onboard_paths):
             folder = os.path.join(storage_path, cam._camera_name)
+            if folder.startswith('RIGHT', 36, 41):
+                filename = 'R_'  +  filename
+                filename = filename[:2] + filename[4:]
+            if folder.startswith('LEFT', 36, 40):
+                filename = 'L_' + filename
             cpath = self.get_image_from_camera(cam, location, folder, filename)
             stored_file_paths.append(cpath)
 
