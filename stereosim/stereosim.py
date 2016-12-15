@@ -1,4 +1,5 @@
 from __future__ import print_function
+from multiprocessing.dummy import Pool as ThreadPool
 
 import os
 import logging
@@ -218,8 +219,15 @@ class StereoCamera():
 
         stored_file_paths = []
         camera_onboard_paths = []
-        for cam in self.cameras:
-            camera_onboard_paths.append(self.trigger_capture(cam))
+       
+        cameras_test = [self.cameras[0], self.cameras[1]]
+
+        pool = ThreadPool(4)
+       
+        camera_onboard_paths = pool.map(self.trigger_capture, cameras_test)
+        
+        pool.close()
+        pool.join()
 
         for cam, location in zip(self.cameras, camera_onboard_paths):
             folder = os.path.join(storage_path, cam._camera_name)
