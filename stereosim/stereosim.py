@@ -219,7 +219,7 @@ class StereoCamera():
 
         stored_file_paths = []
         camera_onboard_paths = []
-       
+        
         cameras_test = [self.cameras[0], self.cameras[1]]
 
         pool = ThreadPool(4)
