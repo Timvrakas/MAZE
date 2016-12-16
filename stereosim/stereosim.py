@@ -220,14 +220,14 @@ class StereoCamera():
         stored_file_paths = []
         camera_onboard_paths = []
                
-+       cameras_test = [self.cameras[0], self.cameras[1]]
-+
-+       pool = ThreadPool(4)
-+       
-+       camera_onboard_paths = pool.map(self.trigger_capture, cameras_test)
-+        
-+       pool.close()
-+       pool.join()
+        cameras_test = [self.cameras[0], self.cameras[1]]
+
+        pool = ThreadPool(4)
+       
+        camera_onboard_paths = pool.map(self.trigger_capture, cameras_test)
+        
+        pool.close()
+        pool.join()
 
         for cam, location in zip(self.cameras, camera_onboard_paths):
             folder = os.path.join(storage_path, cam._camera_name)
