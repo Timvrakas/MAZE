@@ -32,7 +32,7 @@ def compute_CAHVOR(pinhole_model):
     Vn = - pinhole_model['rotation_mat'][1, :]
 
     H = hs * Hn + hc * A
-    V = vs * Vn + vc * A
+    V = vs * Hn + vc * A
     O = A        # We assume O = A in converted CAHVOR Model
 
     # Fixing Axis specifically for PTU unit.
