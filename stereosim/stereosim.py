@@ -309,23 +309,36 @@ class StereoCamera():
             tp = ptu.tilt()
             az = ptu.pan_angle()
             el = ptu.tilt_angle()
+            
+            yaml_path = os.path.splitext(file_path)[0]
+            contents = {
+                'AZIMUTH': az,
+                'ELEVATION': el,
+                'PP': float(pp),
+                'TP': float(tp),
+                'f': float(focal_length),
+                'Camera': camera._camera_name
+            }
+            with open('{}.lbl'.format(yaml_path), 'w') as lblfile:
+                yaml.dump(contents, lblfile, default_flow_style=False)
+
         else:
             pp = None
             tp = None
             az = None
             el = None
 
-        yaml_path = os.path.splitext(file_path)[0]
-        contents = {
-            'AZIMUTH': az,
-            'ELEVATION': el,
-            'PP': float(pp),
-            'TP': float(tp),
-            'f': float(focal_length),
-            'Camera': camera._camera_name
-        }
-        with open('{}.lbl'.format(yaml_path), 'w') as lblfile:
-            yaml.dump(contents, lblfile, default_flow_style=False)
+            yaml_path = os.path.splitext(file_path)[0]
+            contents = {
+                'AZIMUTH': az,
+                'ELEVATION': el,
+                'PP': pp,
+                'TP': tp,
+                'f': float(focal_length),
+                'Camera': camera._camera_name
+            }
+            with open('{}.lbl'.format(yaml_path), 'w') as lblfile:
+                yaml.dump(contents, lblfile, default_flow_style=False)
 
     def quit(self):
         for cam in self.cameras:
