@@ -41,8 +41,8 @@ def test_generate_pds_with_cahvor_left():
                             -0.025895397943394106])
     assert_almost_equal(H, [-3668.464789238566, -23222.553666216594,
                             -218.30723379448355])
-    assert_almost_equal(V, [-1837.818951993951, 71.89351162208224,
-                            23237.35009760759])
+    assert_almost_equal(V, [-607.2642643405248, -23302.0994264739420,
+                            24.0659112157058])
     os.remove(os.path.splitext(filename_left)[0] + '.IMG')
 
 
@@ -73,8 +73,8 @@ def test_generate_pds_with_cahvor_right():
                             0.10481701080309513])
     assert_almost_equal(H, [-611.6639911280968, -23503.278833922475,
                             118.4987568245268])
-    assert_almost_equal(V, [-47.173555667619596, 118.76981483988821,
-                            23309.672994764074])
+    assert_almost_equal(V, [2443.2223036460596, -23181.3008195100119,
+                            123.0602553862336])
     os.remove(os.path.splitext(filename_right)[0] + '.IMG')
 
 
