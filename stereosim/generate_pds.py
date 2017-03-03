@@ -14,7 +14,7 @@ import io
 
 class PDSGenerator(object):
     def __init__(self, filepath):
-        pds_date = _convert_date(filepath)
+        pds_date = self._convert_date(filepath)
         print('pds_date:', pds_date)
         jpg_im = Image.open(filepath)
         np_ar = np.asarray(jpg_im)
@@ -27,8 +27,7 @@ class PDSGenerator(object):
         self.img = PDS3Image(new_ar)
         self.filename = os.path.splitext(filepath)[0]
         if self._label_file_exists():
-            self.img.label = self._update_label()
-            #self.img.label =
+            self.img.label = self._update_label(pds_date)
         self.img.save(self.filename + '.IMG')
 
     def _label_file_exists(self):
@@ -45,7 +44,7 @@ class PDSGenerator(object):
         else:
             return 0
 
-    def _update_label(self):
+    def _update_label(self, pds_date):
         """
         Updates label by addiing 2 gruops into it.
         1. PTU_ARTICULATION_STATE
@@ -63,6 +62,7 @@ class PDSGenerator(object):
         self.img.label = self._add_group('PTU_ARTICULATION_STATE')
         self.img.label = self._add_group('CAHVOR_CAMERA_MODEL')
         self.img.label = self._add_group('PHOTOGRAMMETRY_CAMERA_MODEL')
+        self.img.label['IMAGE']['IMAGE_CREATION_TIME'] =  pds_date
         return self.img.label
 
     def _add_group(self, group_name):
@@ -189,7 +189,7 @@ class PDSGenerator(object):
         print('date pds format:', pds_date)
         return pds_date
 
- main():
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('filepath', help='String Filepath')
     args = parser.parse_args()
