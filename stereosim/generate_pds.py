@@ -4,6 +4,7 @@ from stereosim.camera_orientation import CAHVmodel
 import numpy as np
 from planetaryimage import PDS3Image
 from PIL import Image
+import exifread
 import argparse
 import os.path
 import yaml
@@ -13,6 +14,8 @@ import io
 
 class PDSGenerator(object):
     def __init__(self, filepath):
+        pds_date = _convert_date(filepath)
+        print('pds_date:', pds_date)
         jpg_im = Image.open(filepath)
         np_ar = np.asarray(jpg_im)
         dim = np_ar.shape
@@ -25,6 +28,7 @@ class PDSGenerator(object):
         self.filename = os.path.splitext(filepath)[0]
         if self._label_file_exists():
             self.img.label = self._update_label()
+            #self.img.label =
         self.img.save(self.filename + '.IMG')
 
     def _label_file_exists(self):
@@ -45,7 +49,7 @@ class PDSGenerator(object):
         """
         Updates label by addiing 2 gruops into it.
         1. PTU_ARTICULATION_STATE
-        2. GEOMETRIC_CAMERA_MODEL
+        2. CAHVOR_CAMERA_MODEL
 
         Returns:
         label: PVLModule
@@ -57,7 +61,8 @@ class PDSGenerator(object):
             except yaml.YAMLError as exc:
                 print(exc)
         self.img.label = self._add_group('PTU_ARTICULATION_STATE')
-        self.img.label = self._add_group('GEOMETRIC_CAMERA_MODEL')
+        self.img.label = self._add_group('CAHVOR_CAMERA_MODEL')
+        self.img.label = self._add_group('PHOTOGRAMMETRY_CAMERA_MODEL')
         return self.img.label
 
     def _add_group(self, group_name):
@@ -82,14 +87,17 @@ class PDSGenerator(object):
             self.img.label['AZIMUTH'] = self.yaml_data['AZIMUTH']
             self.img.label['ELEVATION'] = self.yaml_data['ELEVATION']
             self.img.label['END_GROUP'] = 'PTU_ARTICULATION_STATE'
-        elif group_name == 'GEOMETRIC_CAMERA_MODEL':
-            self.img.label['BEGIN_GROUP'] = 'GEOMETRIC_CAMERA_MODEL'
-            self.img.label['MODEL_TYPE'] = 'CAHV'
-            self.img.label['MODEL_COMPONENT_ID'] = ["C", "A", "H", "V"]
+        elif group_name == 'CAHVOR_CAMERA_MODEL':
+            self.img.label['BEGIN_GROUP'] = 'CAHVOR_CAMERA_MODEL'
+            self.img.label['MODEL_TYPE'] = 'CAHVOR'
+            self.img.label['MODEL_COMPONENT_ID'] = ["C", "A", "H", "V", "O", "R"]
             self.img.label['MODEL_COMPONENT_NAME'] = ["CENTER", "AXIS",
                                                       "HORIZONTAL",
-                                                      "VERTICAL"]
+                                                      "VERTICAL", "O", "R"]
             cahv = CAHVmodel.compute(self.yaml_data['Camera'])
+            print("Printing CAHV")
+            print(cahv)
+            print("TESTING CAHVOR")
             C = compute_coordinates(cahv.C, self.yaml_data['AZIMUTH'],
                                     self.yaml_data['ELEVATION'])
             A = compute_coordinates(cahv.A, self.yaml_data['AZIMUTH'],
@@ -98,11 +106,44 @@ class PDSGenerator(object):
                                     self.yaml_data['ELEVATION'])
             V = compute_coordinates(cahv.V, self.yaml_data['AZIMUTH'],
                                     self.yaml_data['ELEVATION'])
+            O = compute_coordinates(cahv.O, self.yaml_data['AZIMUTH'],
+                        self.yaml_data['ELEVATION'])
+            R = cahv.R
+            # print("Printing A vector")
+            # print(cahv.A)
+            # print("Printing O vector")
+            # print(cahv.O)
+            print("Printing R vector")
+            print(cahv.R)
+            
+            #This is how I would print 'O' vector directly i.e. without changing the camera_orientation.py
+            #my_test_object = CAHVmodel(self.yaml_data['Camera'])
+            #my_test = my_test_object._cahv
+            #print("Printing O vector")
+            #print(my_test['O'])
+            
             self.img.label['MODEL_COMPONENT_1'] = C.tolist()
             self.img.label['MODEL_COMPONENT_2'] = A.tolist()
             self.img.label['MODEL_COMPONENT_3'] = H.tolist()
             self.img.label['MODEL_COMPONENT_4'] = V.tolist()
-            self.img.label['END_GROUP'] = 'GEOMETRIC_CAMERA_MODEL'
+            self.img.label['MODEL_COMPONENT_5'] = O.tolist()
+            if(R == None):
+                self.img.label['MODEL_COMPONENT_6'] = R
+            else:
+                self.img.label['MODEL_COMPONENT_6'] = R.tolist()
+            self.img.label['END_GROUP'] = 'CAHVOR_CAMERA_MODEL'
+        elif group_name == 'PHOTOGRAMMETRY_CAMERA_MODEL':
+            self.img.label['BEGIN_GROUP'] = 'PHOTOGRAMMETRY_CAMERA_MODEL'
+            self.img.label['MODEL_TYPE'] = 'PHOTOGRAMMETRY'
+            self.img.label['MODEL_COMPONENT_ID'] = ["M", "f", "blah", "blah"]
+            self.img.label['MODEL_COMPONENT_NAME'] = ["ROTATION_MATRIX", "FOCAL_LENGTH",
+                                                      "blah",
+                                                      "blah"]
+            print("TESTING COLLINEARITY")
+            test_object = CAHVmodel(self.yaml_data['Camera'])
+            test = test_object._cahv_input
+            print(test)
+            self.img.label['END_GROUP'] = 'PHOTOGRAMMETRY_CAMERA_MODEL'
         stream = io.BytesIO()
         pvl.dump(self.img.label, stream)
         stream.seek(0)
@@ -112,9 +153,43 @@ class PDSGenerator(object):
         label = pvl.PVLModule(label_list)
         # print(label)
         return label
+    def _convert_date(self, filepath):
+        """
+        Access the image acquisition time from intial image
+        and convert to PDS format for storage in PDS header.
 
+        As of this writing:
+        EXIF data format: 2017:02:21 12:36:11
+        PDS date format:  2017-02-21T12:36:11.sssZ
+        See: https://pds.jpl.nasa.gov/documents/sr/stdref3.7/Chapter07.pdf
 
-def main():
+        Parameters
+        ----------
+        filepath: string
+            Path to the file that is being convert to PDS
+
+        Returns
+        -------
+        pds_date: string
+            Image acquisition time in PDS format
+        """
+        with open(filepath, 'rb') as f:
+            meta = exifread.process_file(f, details=False)
+        date = '{}'.format(meta['EXIF DateTimeOriginal'])
+        print('date exif format:', date)
+
+        # Identify parts of the date for PDS application
+        year = date[0:4]
+        month = date[5:7]
+        day = date[8:10]
+        hour = date[11:13]
+        minute = date[14:16]
+        second = date[17:19]
+        pds_date = year + '-' + month + '-' + day + 'T' + hour + ':' + minute + ':' + second + '.sssZ'
+        print('date pds format:', pds_date)
+        return pds_date
+
+ main():
     parser = argparse.ArgumentParser()
     parser.add_argument('filepath', help='String Filepath')
     args = parser.parse_args()
