@@ -179,13 +179,13 @@ class PDSGenerator(object):
         print('date exif format:', date)
 
         # Identify parts of the date for PDS application
-        year = date[0:4]
-        month = date[5:7]
-        day = date[8:10]
-        hour = date[11:13]
-        minute = date[14:16]
-        second = date[17:19]
-        pds_date = year + '-' + month + '-' + day + 'T' + hour + ':' + minute + ':' + second + '.sssZ'
+        yr = date[0:4]
+        mo = date[5:7]
+        d = date[8:10]
+        hr = date[11:13]
+        m = date[14:16]
+        s = date[17:19]
+        pds_date = yr + '-' + mo + '-' + d + 'T' + hr + ':' + m + ':' + s + '.sssZ'
         print('date pds format:', pds_date)
         return pds_date
 
