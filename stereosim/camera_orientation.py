@@ -59,6 +59,18 @@ class CAHVmodel(object):
         """
         return self._cahv['V']
 
+    @property
+    def O(self):
+        """Returns Vertical Vector of CAHV model.
+        """
+        return self._cahv['O']    
+
+    @property
+    def R(self):
+        """Returns Vertical Vector of CAHV model.
+        """
+        return self._cahv['R']    
+
     def _get_input(self, camera_eye):
         """
         Prepares Input dict required to compute CAHV.

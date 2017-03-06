@@ -115,13 +115,13 @@ class PDSGenerator(object):
             # print(cahv.O)
             print("Printing R vector")
             print(cahv.R)
-            
+
             #This is how I would print 'O' vector directly i.e. without changing the camera_orientation.py
             #my_test_object = CAHVmodel(self.yaml_data['Camera'])
             #my_test = my_test_object._cahv
             #print("Printing O vector")
             #print(my_test['O'])
-            
+
             self.img.label['MODEL_COMPONENT_1'] = C.tolist()
             self.img.label['MODEL_COMPONENT_2'] = A.tolist()
             self.img.label['MODEL_COMPONENT_3'] = H.tolist()
@@ -135,14 +135,32 @@ class PDSGenerator(object):
         elif group_name == 'PHOTOGRAMMETRY_CAMERA_MODEL':
             self.img.label['BEGIN_GROUP'] = 'PHOTOGRAMMETRY_CAMERA_MODEL'
             self.img.label['MODEL_TYPE'] = 'PHOTOGRAMMETRY'
-            self.img.label['MODEL_COMPONENT_ID'] = ["M", "f", "blah", "blah"]
-            self.img.label['MODEL_COMPONENT_NAME'] = ["ROTATION_MATRIX", "FOCAL_LENGTH",
-                                                      "blah",
-                                                      "blah"]
+            self.img.label['MODEL_COMPONENT_ID'] = ["C", "F", "PxS", "ImS", "P", "ANG"]
+            self.img.label['MODEL_COMPONENT_NAME'] = ["CENTER", "FOCAL_LENGTH",
+                                                      "PIXEL_SIZE",
+                                                      "IMAGE_SIZE",
+                                                      "PRINICIPAL",
+                                                      "ROTATION_ANGLES"]
             print("TESTING COLLINEARITY")
             test_object = CAHVmodel(self.yaml_data['Camera'])
             test = test_object._cahv_input
-            print(test)
+            #print("Printing CENTER")
+            #print(test['center'])
+            C = test['center']
+            F = test['f']
+            PxS = test['pixelsize']
+            ImS = test['image_size']
+            P = test['principal']
+            ANG = None
+            print("Printing Principal")
+            print(ImS)
+            #ang = test[]
+            self.img.label['MODEL_COMPONENT_1'] = C
+            self.img.label['MODEL_COMPONENT_2'] = F
+            self.img.label['MODEL_COMPONENT_3'] = PxS
+            self.img.label['MODEL_COMPONENT_4'] = ImS
+            self.img.label['MODEL_COMPONENT_5'] = P.tolist()
+            self.img.label['MODEL_COMPONENT_6'] = ANG
             self.img.label['END_GROUP'] = 'PHOTOGRAMMETRY_CAMERA_MODEL'
         stream = io.BytesIO()
         pvl.dump(self.img.label, stream)
