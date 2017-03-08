@@ -59,6 +59,7 @@ class PDSGenerator(object):
                 self.yaml_data = yaml.load(fp)
             except yaml.YAMLError as exc:
                 print(exc)
+        self.img.label = self._add_group('IDENTIFICATION_DATA_ELEMENTS')
         self.img.label = self._add_group('PTU_ARTICULATION_STATE')
         self.img.label = self._add_group('CAHVOR_CAMERA_MODEL')
         self.img.label = self._add_group('PHOTOGRAMMETRY_CAMERA_MODEL')
@@ -78,7 +79,20 @@ class PDSGenerator(object):
         label: PVLModule
             Returns label after adding PVLGroup in it.
         """
-        if group_name == 'PTU_ARTICULATION_STATE':
+        if group_name == 'IDENTIFICATION_DATA_ELEMENTS':
+            self.img.label['BEGIN_GROUP'] = 'IDENTIFICATION_DATA_ELEMENTS'
+            self.img.label['DATA_SET_ID'] = 'UNK'
+            self.img.label['PRODUCT_ID'] = 'UNK'
+            self.img.label['INSTRUMENT_HOST_NAME'] = 'MARS 2020'
+            self.img.label['INSTRUMENT_NAME'] = 'STEREOSIM'
+            self.img.label['TARGET_NAME'] = 'MARS'
+            self.img.label['START_TIME'] = 'UNK'
+            self.img.label['STOP_TIME'] = 'UNK'
+            self.img.label['SPACECRAFT_CLOCK_START_COUNT'] = 'UNK'
+            self.img.label['SPACECRAFT_CLOCK_STOP_COUNT'] = 'UNK'
+            self.img.label['PRODUCT_CREATION_TIME'] = 'UNK'
+            self.img.label['END_GROUP'] = 'IDENTIFICATION_DATA_ELEMENTS'
+        elif group_name == 'PTU_ARTICULATION_STATE':
             self.img.label['BEGIN_GROUP'] = 'PTU_ARTICULATION_STATE'
             self.img.label['ARTICULATION_DEVICE_ID'] = "PTU"
             self.img.label['ARTICULATION_DEVICE_NAME'] = "FLIR Pan-Tilt Unit"
@@ -93,7 +107,7 @@ class PDSGenerator(object):
             self.img.label['MODEL_COMPONENT_ID'] = ["C", "A", "H", "V", "O", "R"]
             self.img.label['MODEL_COMPONENT_NAME'] = ["CENTER", "AXIS",
                                                       "HORIZONTAL",
-                                                      "VERTICAL", "O", "R"]
+                                                      "VERTICAL", "OPTICAL_AXIS", "DISTORTION_COEFFICIENTS"]
             cahv = CAHVmodel.compute(self.yaml_data['Camera'])
             print("Printing CAHV")
             print(cahv)
