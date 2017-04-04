@@ -51,7 +51,8 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "generate_pds = stereosim.generate_pds:main",
+            "generate_pds = stereosim.generate_pds:main",           
+            "populate_pds = stereosim.populate_pds:main",
             "capture = stereosim.capture:main"
         ]
     }
