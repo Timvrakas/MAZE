@@ -63,7 +63,8 @@ class PDSGenerator(object):
         self.img.label = self._add_group('PTU_ARTICULATION_STATE')
         self.img.label = self._add_group('CAHVOR_CAMERA_MODEL_LEFT')
         self.img.label = self._add_group('CAHVOR_CAMERA_MODEL_RIGHT')
-        # self.img.label = self._add_group('PHOTOGRAMMETRY_CAMERA_MODEL')
+        self.img.label = self._add_group('PHOTOGRAMMETRY_CAMERA_MODEL_LEFT')
+        self.img.label = self._add_group('PHOTOGRAMMETRY_CAMERA_MODEL_RIGHT')
         self.img.label['IMAGE']['IMAGE_CREATION_TIME'] =  pds_date
         return self.img.label
 
@@ -104,17 +105,15 @@ class PDSGenerator(object):
             self.img.label['ELEVATION'] = self.yaml_data['ELEVATION']
             self.img.label['END_GROUP'] = 'PTU_ARTICULATION_STATE'
 
-        elif group_name == 'CAHVOR_CAMERA_MODEL_LEFT':
+        elif group_name == 'CAHVOR_CAMERA_MODEL_LEFT' and self.yaml_data['Camera'] == 'LEFT':
             self.img.label['BEGIN_GROUP'] = 'CAHVOR_CAMERA_MODEL_LEFT'
             self.img.label['MODEL_TYPE'] = 'CAHVOR'
-            self.img.label['MODEL_COMPONENT_ID'] = ["C", "A", "H", "V", "O", "R", "Hc", "Vc", "Vs", "V1", "F", "ImS", "PxS", "P", "ANG"]
+            self.img.label['MODEL_COMPONENT_ID'] = ["C", "A", "H", "V", "O", "R", "Hc", "Vc", "Vs", "V1"]
             self.img.label['MODEL_COMPONENT_NAME'] = ["CENTER", "AXIS",
                                                       "HORIZONTAL", "VERTICAL",
                                                       "OPTICAL_AXIS", "DISTORTION_COEFFICIENTS",
                                                       "HORIZONTAL_OPTICAL_CENTER", "VERTICAL_OPTICAL_CENTER",
-                                                      "Vs", "V1",
-                                                      "FOCAL_LENGTH", "IMAGE_SIZE",
-                                                      "PIXEL_SIZE", "PRINICIPAL", "ROTATION_ANGLES"]
+                                                      "Vs", "V1"]
             cahv = CAHVmodel.compute(self.yaml_data['Camera'])
 
             C = [3.451904, 3.258335, 1.254338]
@@ -127,11 +126,6 @@ class PDSGenerator(object):
             Vc = 1041.005182
             Vs = 3886.530592
             V1 = 0.166722249
-            F = 28.76033845
-            ImS = [3072, 2048]
-            PxS = [0.0074, 0.0074]
-            P = [-0.098722821, -0.125838347]
-            ANG = [-72.29916094, 44.2841281, 166.5327547]
 
             self.img.label['MODEL_COMPONENT_1'] = C
             self.img.label['MODEL_COMPONENT_2'] = A
@@ -142,25 +136,17 @@ class PDSGenerator(object):
             self.img.label['MODEL_COMPONENT_7'] = Hc
             self.img.label['MODEL_COMPONENT_8'] = Vc
             self.img.label['MODEL_COMPONENT_9'] = V1
-            self.img.label['MODEL_COMPONENT_10'] = F
-            self.img.label['MODEL_COMPONENT_11'] = ImS
-            self.img.label['MODEL_COMPONENT_12'] = Vc
-            self.img.label['MODEL_COMPONENT_13'] = V1
-            self.img.label['MODEL_COMPONENT_14'] = F
-            self.img.label['MODEL_COMPONENT_15'] = ImS
             self.img.label['END_GROUP'] = 'CAHVOR_CAMERA_MODEL_LEFT'
 
-        elif group_name == 'CAHVOR_CAMERA_MODEL_RIGHT':
+        elif group_name == 'CAHVOR_CAMERA_MODEL_RIGHT' and self.yaml_data['Camera'] == 'RIGHT':
             self.img.label['BEGIN_GROUP'] = 'CAHVOR_CAMERA_MODEL_RIGHT'
             self.img.label['MODEL_TYPE'] = 'CAHVOR'
-            self.img.label['MODEL_COMPONENT_ID'] = ["C", "A", "H", "V", "O", "R", "Hc", "Vc", "Vs", "V1", "F", "ImS", "PxS", "P", "ANG"]
+            self.img.label['MODEL_COMPONENT_ID'] = ["C", "A", "H", "V", "O", "R", "Hc", "Vc", "Vs", "V1"]
             self.img.label['MODEL_COMPONENT_NAME'] = ["CENTER", "AXIS",
                                                       "HORIZONTAL", "VERTICAL",
                                                       "OPTICAL_AXIS", "DISTORTION_COEFFICIENTS",
                                                       "HORIZONTAL_OPTICAL_CENTER", "VERTICAL_OPTICAL_CENTER",
-                                                      "Vs", "V1",
-                                                      "FOCAL_LENGTH", "IMAGE_SIZE",
-                                                      "PIXEL_SIZE", "PRINICIPAL", "ROTATION_ANGLES"]
+                                                      "Vs", "V1"]
             cahv = CAHVmodel.compute(self.yaml_data['Camera'])
 
             C = [3.451904, 3.258335, 1.254338]
@@ -173,11 +159,6 @@ class PDSGenerator(object):
             Vc = 1038.826689
             Vs = 3912.148959
             V1 = 0.166722334
-            F = 28.9499023
-            ImS = [3072, 2048]
-            PxS = [0.0074, 0.0074]
-            P = [-0.14548874, -0.1097175]
-            ANG = [-72.2993175, 44.2841281, 166.5327547]
 
             self.img.label['MODEL_COMPONENT_1'] = C
             self.img.label['MODEL_COMPONENT_2'] = A
@@ -188,13 +169,53 @@ class PDSGenerator(object):
             self.img.label['MODEL_COMPONENT_7'] = Hc
             self.img.label['MODEL_COMPONENT_8'] = Vc
             self.img.label['MODEL_COMPONENT_9'] = V1
-            self.img.label['MODEL_COMPONENT_10'] = F
-            self.img.label['MODEL_COMPONENT_11'] = ImS
-            self.img.label['MODEL_COMPONENT_12'] = Vc
-            self.img.label['MODEL_COMPONENT_13'] = V1
-            self.img.label['MODEL_COMPONENT_14'] = F
-            self.img.label['MODEL_COMPONENT_15'] = ImS
-            self.img.label['END_GROUP'] = 'CAHVOR_CAMERA_MODEL_RIGHT'    
+            self.img.label['END_GROUP'] = 'CAHVOR_CAMERA_MODEL_RIGHT'
+
+        elif group_name == 'PHOTOGRAMMETRY_CAMERA_MODEL_LEFT' and self.yaml_data['Camera'] == 'LEFT':
+            self.img.label['BEGIN_GROUP'] = 'PHOTOGRAMMETRY_CAMERA_MODEL_LEFT'
+            self.img.label['MODEL_TYPE'] = 'PHOTOGRAMMETRY'
+            self.img.label['MODEL_COMPONENT_ID'] = ["C", "F", "PxS", "ImS", "P", "ANG"]
+            self.img.label['MODEL_COMPONENT_NAME'] = ["CENTER", "FOCAL_LENGTH", "PIXEL_SIZE",
+                                                      "IMAGE_SIZE", "PRINICIPAL", "ROTATION_ANGLES"]
+
+            C = [3.451904, 3.258335, 1.254338]
+            F = 28.76033845
+            ImS = [3072, 2048]
+            PxS = [0.0074, 0.0074]
+            P = [-0.098722821, -0.125838347]
+            ANG = [-72.29916094, 44.2841281, 166.5327547]
+
+
+            self.img.label['MODEL_COMPONENT_1'] = C
+            self.img.label['MODEL_COMPONENT_2'] = F
+            self.img.label['MODEL_COMPONENT_3'] = PxS
+            self.img.label['MODEL_COMPONENT_4'] = ImS
+            self.img.label['MODEL_COMPONENT_5'] = P
+            self.img.label['MODEL_COMPONENT_6'] = ANG
+            self.img.label['END_GROUP'] = 'PHOTOGRAMMETRY_CAMERA_MODEL_LEFT'  
+
+        elif group_name == 'PHOTOGRAMMETRY_CAMERA_MODEL_RIGHT' and self.yaml_data['Camera'] == 'RIGHT':
+            self.img.label['BEGIN_GROUP'] = 'PHOTOGRAMMETRY_CAMERA_MODEL_RIGHT'
+            self.img.label['MODEL_TYPE'] = 'PHOTOGRAMMETRY'
+            self.img.label['MODEL_COMPONENT_ID'] = ["C", "F", "PxS", "ImS", "P", "ANG"]
+            self.img.label['MODEL_COMPONENT_NAME'] = ["CENTER", "FOCAL_LENGTH", "PIXEL_SIZE",
+                                                      "IMAGE_SIZE", "PRINICIPAL", "ROTATION_ANGLES"]
+
+            C = [3.451904, 3.258335, 1.254338]
+            F = 28.9499023
+            ImS = [3072, 2048]
+            PxS = [0.0074, 0.0074]
+            P = [-0.14548874, -0.1097175]
+            ANG = [-72.2993175, 44.2841281, 166.5327547]
+
+            self.img.label['MODEL_COMPONENT_1'] = C
+            self.img.label['MODEL_COMPONENT_2'] = F
+            self.img.label['MODEL_COMPONENT_3'] = PxS
+            self.img.label['MODEL_COMPONENT_4'] = ImS
+            self.img.label['MODEL_COMPONENT_5'] = P
+            self.img.label['MODEL_COMPONENT_6'] = ANG
+            self.img.label['END_GROUP'] = 'PHOTOGRAMMETRY_CAMERA_MODEL_RIGHT'  
+
 
         stream = io.BytesIO()
         pvl.dump(self.img.label, stream)
