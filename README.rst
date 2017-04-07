@@ -5,7 +5,7 @@ This system is intended to simulate a stereo pair of adjustable focal length cam
 
 * a FLIR pan tilt head
 * a pair of DSLR cameras with manual zoom
-* a computer to interface with the above items
+* a computer to interface with the above items (i.e. a Raspberry Pi)
 * supporting wiring and accessories
 
 Features
@@ -20,7 +20,7 @@ System Setup
 Stereosim uses the Linux `gphoto` package to interface with the cameras.  Users
 will probably have to install the development versions of the following packages:
 
-  sudo apt-get install gphoto libgphoto2-dev python3-dev
+  sudo apt-get install gphoto2 libgphoto2-dev python3-dev
 
 
 Depending on exactly which python version is in use, you might need a different
