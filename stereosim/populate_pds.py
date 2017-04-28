@@ -12,7 +12,7 @@ import pvl
 import io
 
 
-class PDSGenerator(object):
+class PDSGenerator(PDS3Image):
     def __init__(self, filepath):
         pds_date = self._convert_date(filepath)
         print('pds_date:', pds_date)
@@ -24,11 +24,13 @@ class PDSGenerator(object):
         new_ar[1, :, :] = np_ar[:, :, 1]
         new_ar[2, :, :] = np_ar[:, :, 2]
         new_ar = new_ar.astype('>i2')
-        self.img = PDS3Image(new_ar)
+        super().__init__(new_ar)
+        #self._create_label(new_ar)
+        #self = PDS3Image(new_ar)
         self.filename = os.path.splitext(filepath)[0]
         if self._label_file_exists():
-            self.img.label = self._update_label(pds_date)
-        self.img.save(self.filename + '.IMG')
+            self.label = self._update_labelPDSG(pds_date)
+        self.save(self.filename + '.IMG')
 
     def _label_file_exists(self):
         """
@@ -44,9 +46,9 @@ class PDSGenerator(object):
         else:
             return 0
 
-    def _update_label(self, pds_date):
+    def _update_labelPDSG(self, pds_date):
         """
-        Updates label by addiing 2 gruops into it.
+        Updates label by adding groups into it.
         1. PTU_ARTICULATION_STATE
         2. CAHVOR_CAMERA_MODEL
 
@@ -59,14 +61,14 @@ class PDSGenerator(object):
                 self.yaml_data = yaml.load(fp)
             except yaml.YAMLError as exc:
                 print(exc)
-        self.img.label = self._add_group('IDENTIFICATION_DATA_ELEMENTS')
-        self.img.label = self._add_group('PTU_ARTICULATION_STATE')
-        self.img.label = self._add_group('CAHVOR_CAMERA_MODEL_LEFT')
-        self.img.label = self._add_group('CAHVOR_CAMERA_MODEL_RIGHT')
-        self.img.label = self._add_group('PHOTOGRAMMETRY_CAMERA_MODEL_LEFT')
-        self.img.label = self._add_group('PHOTOGRAMMETRY_CAMERA_MODEL_RIGHT')
-        self.img.label['IMAGE']['IMAGE_CREATION_TIME'] =  pds_date
-        return self.img.label
+        self.label = self._add_group('IDENTIFICATION_DATA_ELEMENTS')
+        self.label = self._add_group('PTU_ARTICULATION_STATE')
+        self.label = self._add_group('CAHVOR_CAMERA_MODEL_LEFT')
+        self.label = self._add_group('CAHVOR_CAMERA_MODEL_RIGHT')
+        self.label = self._add_group('PHOTOGRAMMETRY_CAMERA_MODEL_LEFT')
+        self.label = self._add_group('PHOTOGRAMMETRY_CAMERA_MODEL_RIGHT')
+        self.label['IMAGE']['IMAGE_CREATION_TIME'] =  pds_date
+        return self.label
 
     def _add_group(self, group_name):
         """
@@ -82,34 +84,34 @@ class PDSGenerator(object):
             Returns label after adding PVLGroup in it.
         """
         if group_name == 'IDENTIFICATION_DATA_ELEMENTS':
-            self.img.label['BEGIN_GROUP'] = 'IDENTIFICATION_DATA_ELEMENTS'
-            self.img.label['DATA_SET_ID'] = 'UNK'
-            self.img.label['PRODUCT_ID'] = 'UNK'
-            self.img.label['INSTRUMENT_HOST_NAME'] = 'MARS 2020'
-            self.img.label['INSTRUMENT_NAME'] = 'STEREOSIM'
-            self.img.label['TARGET_NAME'] = 'MARS'
-            self.img.label['START_TIME'] = 'UNK'
-            self.img.label['STOP_TIME'] = 'UNK'
-            self.img.label['SPACECRAFT_CLOCK_START_COUNT'] = 'UNK'
-            self.img.label['SPACECRAFT_CLOCK_STOP_COUNT'] = 'UNK'
-            self.img.label['PRODUCT_CREATION_TIME'] = 'UNK'
-            self.img.label['END_GROUP'] = 'IDENTIFICATION_DATA_ELEMENTS'
+            self.label['BEGIN_GROUP'] = 'IDENTIFICATION_DATA_ELEMENTS'
+            self.label['DATA_SET_ID'] = 'UNK'
+            self.label['PRODUCT_ID'] = 'UNK'
+            self.label['INSTRUMENT_HOST_NAME'] = 'MARS 2020'
+            self.label['INSTRUMENT_NAME'] = 'STEREOSIM'
+            self.label['TARGET_NAME'] = 'MARS'
+            self.label['START_TIME'] = 'UNK'
+            self.label['STOP_TIME'] = 'UNK'
+            self.label['SPACECRAFT_CLOCK_START_COUNT'] = 'UNK'
+            self.label['SPACECRAFT_CLOCK_STOP_COUNT'] = 'UNK'
+            self.label['PRODUCT_CREATION_TIME'] = 'UNK'
+            self.label['END_GROUP'] = 'IDENTIFICATION_DATA_ELEMENTS'
 
         elif group_name == 'PTU_ARTICULATION_STATE':
-            self.img.label['BEGIN_GROUP'] = 'PTU_ARTICULATION_STATE'
-            self.img.label['ARTICULATION_DEVICE_ID'] = "PTU"
-            self.img.label['ARTICULATION_DEVICE_NAME'] = "FLIR Pan-Tilt Unit"
-            self.img.label['PP'] = int(self.yaml_data['PP'])
-            self.img.label['TP'] = int(self.yaml_data['TP'])
-            self.img.label['AZIMUTH'] = self.yaml_data['AZIMUTH']
-            self.img.label['ELEVATION'] = self.yaml_data['ELEVATION']
-            self.img.label['END_GROUP'] = 'PTU_ARTICULATION_STATE'
+            self.label['BEGIN_GROUP'] = 'PTU_ARTICULATION_STATE'
+            self.label['ARTICULATION_DEVICE_ID'] = "PTU"
+            self.label['ARTICULATION_DEVICE_NAME'] = "FLIR Pan-Tilt Unit"
+            self.label['PP'] = int(self.yaml_data['PP'])
+            self.label['TP'] = int(self.yaml_data['TP'])
+            self.label['AZIMUTH'] = self.yaml_data['AZIMUTH']
+            self.label['ELEVATION'] = self.yaml_data['ELEVATION']
+            self.label['END_GROUP'] = 'PTU_ARTICULATION_STATE'
 
         elif group_name == 'CAHVOR_CAMERA_MODEL_LEFT' and self.yaml_data['Camera'] == 'LEFT':
-            self.img.label['BEGIN_GROUP'] = 'CAHVOR_CAMERA_MODEL_LEFT'
-            self.img.label['MODEL_TYPE'] = 'CAHVOR'
-            self.img.label['MODEL_COMPONENT_ID'] = ["C", "A", "H", "V", "O", "R", "Hc", "Vc", "Vs", "V1"]
-            self.img.label['MODEL_COMPONENT_NAME'] = ["CENTER", "AXIS",
+            self.label['BEGIN_GROUP'] = 'CAHVOR_CAMERA_MODEL_LEFT'
+            self.label['MODEL_TYPE'] = 'CAHVOR'
+            self.label['MODEL_COMPONENT_ID'] = ["C", "A", "H", "V", "O", "R", "Hc", "Vc", "Vs", "V1"]
+            self.label['MODEL_COMPONENT_NAME'] = ["CENTER", "AXIS",
                                                       "HORIZONTAL", "VERTICAL",
                                                       "OPTICAL_AXIS", "DISTORTION_COEFFICIENTS",
                                                       "HORIZONTAL_OPTICAL_CENTER", "VERTICAL_OPTICAL_CENTER",
@@ -127,22 +129,22 @@ class PDSGenerator(object):
             Vs = 3886.530592
             V1 = 0.166722249
 
-            self.img.label['MODEL_COMPONENT_1'] = C
-            self.img.label['MODEL_COMPONENT_2'] = A
-            self.img.label['MODEL_COMPONENT_3'] = H
-            self.img.label['MODEL_COMPONENT_4'] = V
-            self.img.label['MODEL_COMPONENT_5'] = O
-            self.img.label['MODEL_COMPONENT_6'] = R
-            self.img.label['MODEL_COMPONENT_7'] = Hc
-            self.img.label['MODEL_COMPONENT_8'] = Vc
-            self.img.label['MODEL_COMPONENT_9'] = V1
-            self.img.label['END_GROUP'] = 'CAHVOR_CAMERA_MODEL_LEFT'
+            self.label['MODEL_COMPONENT_1'] = C
+            self.label['MODEL_COMPONENT_2'] = A
+            self.label['MODEL_COMPONENT_3'] = H
+            self.label['MODEL_COMPONENT_4'] = V
+            self.label['MODEL_COMPONENT_5'] = O
+            self.label['MODEL_COMPONENT_6'] = R
+            self.label['MODEL_COMPONENT_7'] = Hc
+            self.label['MODEL_COMPONENT_8'] = Vc
+            self.label['MODEL_COMPONENT_9'] = V1
+            self.label['END_GROUP'] = 'CAHVOR_CAMERA_MODEL_LEFT'
 
         elif group_name == 'CAHVOR_CAMERA_MODEL_RIGHT' and self.yaml_data['Camera'] == 'RIGHT':
-            self.img.label['BEGIN_GROUP'] = 'CAHVOR_CAMERA_MODEL_RIGHT'
-            self.img.label['MODEL_TYPE'] = 'CAHVOR'
-            self.img.label['MODEL_COMPONENT_ID'] = ["C", "A", "H", "V", "O", "R", "Hc", "Vc", "Vs", "V1"]
-            self.img.label['MODEL_COMPONENT_NAME'] = ["CENTER", "AXIS",
+            self.label['BEGIN_GROUP'] = 'CAHVOR_CAMERA_MODEL_RIGHT'
+            self.label['MODEL_TYPE'] = 'CAHVOR'
+            self.label['MODEL_COMPONENT_ID'] = ["C", "A", "H", "V", "O", "R", "Hc", "Vc", "Vs", "V1"]
+            self.label['MODEL_COMPONENT_NAME'] = ["CENTER", "AXIS",
                                                       "HORIZONTAL", "VERTICAL",
                                                       "OPTICAL_AXIS", "DISTORTION_COEFFICIENTS",
                                                       "HORIZONTAL_OPTICAL_CENTER", "VERTICAL_OPTICAL_CENTER",
@@ -160,22 +162,22 @@ class PDSGenerator(object):
             Vs = 3912.148959
             V1 = 0.166722334
 
-            self.img.label['MODEL_COMPONENT_1'] = C
-            self.img.label['MODEL_COMPONENT_2'] = A
-            self.img.label['MODEL_COMPONENT_3'] = H
-            self.img.label['MODEL_COMPONENT_4'] = V
-            self.img.label['MODEL_COMPONENT_5'] = O
-            self.img.label['MODEL_COMPONENT_6'] = R
-            self.img.label['MODEL_COMPONENT_7'] = Hc
-            self.img.label['MODEL_COMPONENT_8'] = Vc
-            self.img.label['MODEL_COMPONENT_9'] = V1
-            self.img.label['END_GROUP'] = 'CAHVOR_CAMERA_MODEL_RIGHT'
+            self.label['MODEL_COMPONENT_1'] = C
+            self.label['MODEL_COMPONENT_2'] = A
+            self.label['MODEL_COMPONENT_3'] = H
+            self.label['MODEL_COMPONENT_4'] = V
+            self.label['MODEL_COMPONENT_5'] = O
+            self.label['MODEL_COMPONENT_6'] = R
+            self.label['MODEL_COMPONENT_7'] = Hc
+            self.label['MODEL_COMPONENT_8'] = Vc
+            self.label['MODEL_COMPONENT_9'] = V1
+            self.label['END_GROUP'] = 'CAHVOR_CAMERA_MODEL_RIGHT'
 
         elif group_name == 'PHOTOGRAMMETRY_CAMERA_MODEL_LEFT' and self.yaml_data['Camera'] == 'LEFT':
-            self.img.label['BEGIN_GROUP'] = 'PHOTOGRAMMETRY_CAMERA_MODEL_LEFT'
-            self.img.label['MODEL_TYPE'] = 'PHOTOGRAMMETRY'
-            self.img.label['MODEL_COMPONENT_ID'] = ["C", "F", "PxS", "ImS", "P", "ANG"]
-            self.img.label['MODEL_COMPONENT_NAME'] = ["CENTER", "FOCAL_LENGTH", "PIXEL_SIZE",
+            self.label['BEGIN_GROUP'] = 'PHOTOGRAMMETRY_CAMERA_MODEL_LEFT'
+            self.label['MODEL_TYPE'] = 'PHOTOGRAMMETRY'
+            self.label['MODEL_COMPONENT_ID'] = ["C", "F", "PxS", "ImS", "P", "ANG"]
+            self.label['MODEL_COMPONENT_NAME'] = ["CENTER", "FOCAL_LENGTH", "PIXEL_SIZE",
                                                       "IMAGE_SIZE", "PRINICIPAL", "ROTATION_ANGLES"]
 
             C = [3.451904, 3.258335, 1.254338]
@@ -186,19 +188,19 @@ class PDSGenerator(object):
             ANG = [-72.29916094, 44.2841281, 166.5327547]
 
 
-            self.img.label['MODEL_COMPONENT_1'] = C
-            self.img.label['MODEL_COMPONENT_2'] = F
-            self.img.label['MODEL_COMPONENT_3'] = PxS
-            self.img.label['MODEL_COMPONENT_4'] = ImS
-            self.img.label['MODEL_COMPONENT_5'] = P
-            self.img.label['MODEL_COMPONENT_6'] = ANG
-            self.img.label['END_GROUP'] = 'PHOTOGRAMMETRY_CAMERA_MODEL_LEFT'  
+            self.label['MODEL_COMPONENT_1'] = C
+            self.label['MODEL_COMPONENT_2'] = F
+            self.label['MODEL_COMPONENT_3'] = PxS
+            self.label['MODEL_COMPONENT_4'] = ImS
+            self.label['MODEL_COMPONENT_5'] = P
+            self.label['MODEL_COMPONENT_6'] = ANG
+            self.label['END_GROUP'] = 'PHOTOGRAMMETRY_CAMERA_MODEL_LEFT'  
 
         elif group_name == 'PHOTOGRAMMETRY_CAMERA_MODEL_RIGHT' and self.yaml_data['Camera'] == 'RIGHT':
-            self.img.label['BEGIN_GROUP'] = 'PHOTOGRAMMETRY_CAMERA_MODEL_RIGHT'
-            self.img.label['MODEL_TYPE'] = 'PHOTOGRAMMETRY'
-            self.img.label['MODEL_COMPONENT_ID'] = ["C", "F", "PxS", "ImS", "P", "ANG"]
-            self.img.label['MODEL_COMPONENT_NAME'] = ["CENTER", "FOCAL_LENGTH", "PIXEL_SIZE",
+            self.label['BEGIN_GROUP'] = 'PHOTOGRAMMETRY_CAMERA_MODEL_RIGHT'
+            self.label['MODEL_TYPE'] = 'PHOTOGRAMMETRY'
+            self.label['MODEL_COMPONENT_ID'] = ["C", "F", "PxS", "ImS", "P", "ANG"]
+            self.label['MODEL_COMPONENT_NAME'] = ["CENTER", "FOCAL_LENGTH", "PIXEL_SIZE",
                                                       "IMAGE_SIZE", "PRINICIPAL", "ROTATION_ANGLES"]
 
             C = [3.451904, 3.258335, 1.254338]
@@ -208,23 +210,102 @@ class PDSGenerator(object):
             P = [-0.14548874, -0.1097175]
             ANG = [-72.2993175, 44.2841281, 166.5327547]
 
-            self.img.label['MODEL_COMPONENT_1'] = C
-            self.img.label['MODEL_COMPONENT_2'] = F
-            self.img.label['MODEL_COMPONENT_3'] = PxS
-            self.img.label['MODEL_COMPONENT_4'] = ImS
-            self.img.label['MODEL_COMPONENT_5'] = P
-            self.img.label['MODEL_COMPONENT_6'] = ANG
-            self.img.label['END_GROUP'] = 'PHOTOGRAMMETRY_CAMERA_MODEL_RIGHT'  
+            self.label['MODEL_COMPONENT_1'] = C
+            self.label['MODEL_COMPONENT_2'] = F
+            self.label['MODEL_COMPONENT_3'] = PxS
+            self.label['MODEL_COMPONENT_4'] = ImS
+            self.label['MODEL_COMPONENT_5'] = P
+            self.label['MODEL_COMPONENT_6'] = ANG
+            self.label['END_GROUP'] = 'PHOTOGRAMMETRY_CAMERA_MODEL_RIGHT'  
 
 
         stream = io.BytesIO()
-        pvl.dump(self.img.label, stream)
+        pvl.dump(self.label, stream)
         stream.seek(0)
         label_list = list(pvl.load(stream))
         l = len(label_list)
         label_list[l-2], label_list[l-1] = label_list[l-1], label_list[l-2]
         label = pvl.PVLModule(label_list)
         return label
+
+    def _create_label(self, array):
+        """
+        Override PDS3Image._create_label() method to reflect desired label attributes.
+
+        Parameters
+        ----------
+
+
+        Returns
+        -------
+        PVLModule label for the given NumPy array.
+        """
+        if len(array.shape) == 3:
+            bands = array.shape[0]
+            lines = array.shape[1]
+            line_samples = array.shape[2]
+        else:
+            bands = 1
+            lines = array.shape[0]
+            line_samples = array.shape[1]
+        record_bytes = line_samples * array.itemsize
+        label_module = pvl.PVLModule([
+            ('ODL_VERSION_ID', 'ODL3'),
+            ('RECORD_TYPE', 'FIXED_LENGTH'),
+            ('RECORD_BYTES', record_bytes),
+            ('LABEL_RECORDS', 1),
+            ('^IMAGE', 1),
+            ('IMAGE',
+                {'BANDS': bands,
+                 'MAXIMUM': 'UNK',
+                 'BAND_STORAGE_TYPE': 'BAND_SEQUENTIAL',
+                 'FIRST_LINE': 1,
+                 'FIRST_LINE_SAMPLE': 1,
+                 'LINES': lines,
+                 'LINE_SAMPLES': line_samples,
+                 'SAMPLE_BITS': array.itemsize * 8,
+                 'SAMPLE_TYPE': 'MSB_INTEGER'})
+            ])
+        return self._update_label(label_module, array)
+
+    def _update_label(self, label, array):
+        """Update PDS3 label for NumPy Array.
+        It is called by '_create_label' to update label values
+        such as,
+        - ^IMAGE, RECORD_BYTES
+        - STANDARD_DEVIATION
+        - MAXIMUM, MINIMUM
+        - MEDIAN, MEAN
+
+        ** Currently lines are commented out because these values are not desired by users.
+        Returns
+        -------
+        Update label module for the NumPy array.
+        Usage: self.label = self._update_label(label, array)
+        """
+        maximum = float(np.max(array))
+        mean = float(np.mean(array))
+        median = float(np.median(array))
+        minimum = float(np.min(array))
+        stdev = float(np.std(array, ddof=1))
+
+        encoder = pvl.encoder.PDSLabelEncoder
+        serial_label = pvl.dumps(label, cls=encoder)
+        label_sz = len(serial_label)
+        image_pointer = int(label_sz / label['RECORD_BYTES']) + 1
+
+        #label['/* IDENTIFICATION DATe ELEMENTS */'] = 'None'
+        label['^IMAGE'] = image_pointer + 1
+        label['LABEL_RECORDS'] = image_pointer
+        #label['IMAGE']['MEAN'] = mean
+        #label['IMAGE']['MAXIMUM'] = maximum
+        #label['IMAGE']['MEDIAN'] = median
+        #label['IMAGE']['MINIMUM'] = minimum
+        #label['IMAGE']['STANDARD_DEVIATION'] = stdev
+
+        return label
+
+
     def _convert_date(self, filepath):
         """
         Access the image acquisition time from intial image
