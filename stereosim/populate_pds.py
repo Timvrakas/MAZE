@@ -63,10 +63,12 @@ class PDSGenerator(PDS3Image):
             except yaml.YAMLError as exc:
                 print(exc)
         self.label = self._add_group('PTU_ARTICULATION_STATE')
-        self.label = self._add_group('CAHVOR_CAMERA_MODEL_LEFT')
-        self.label = self._add_group('CAHVOR_CAMERA_MODEL_RIGHT')
-        self.label = self._add_group('COLLINEAR_CAMERA_MODEL_LEFT')
-        self.label = self._add_group('COLLINEAR_CAMERA_MODEL_RIGHT')
+        if self.yaml_data['Camera'] == 'LEFT':
+            self.label = self._add_group('CAHVOR_CAMERA_MODEL_LEFT')
+            self.label = self._add_group('COLLINEAR_CAMERA_MODEL_LEFT')
+        if self.yaml_data['Camera'] == 'RIGHT':
+            self.label = self._add_group('CAHVOR_CAMERA_MODEL_RIGHT')
+            self.label = self._add_group('COLLINEAR_CAMERA_MODEL_RIGHT')
         self.label['IMAGE']['IMAGE_CREATION_TIME'] =  pds_date
         return self.label
 
@@ -94,7 +96,7 @@ class PDSGenerator(PDS3Image):
             self.label['ELEVATION'] = self.yaml_data['ELEVATION']
             self.label['END_GROUP'] = 'PTU_ARTICULATION_STATE'
 
-        elif group_name == 'CAHVOR_CAMERA_MODEL_LEFT' and self.yaml_data['Camera'] == 'LEFT':
+        elif group_name == 'CAHVOR_CAMERA_MODEL_LEFT':
             self.label['BEGIN_GROUP'] = 'GEOMETRIC_CAMERA_MODEL'
             self.label['MODEL_TYPE'] = 'CAHVOR'
             self.label['MODEL_COMPONENT_ID'] = ["C", "A", "H", "V", "O", "R", "Hc", "Vc", "Vs", "V1"]
@@ -128,7 +130,7 @@ class PDSGenerator(PDS3Image):
             self.label['MODEL_COMPONENT_10'] = V1
             self.label['END_GROUP'] = 'GEOMETRIC_CAMERA_MODEL'
 
-        elif group_name == 'CAHVOR_CAMERA_MODEL_RIGHT' and self.yaml_data['Camera'] == 'RIGHT':
+        elif group_name == 'CAHVOR_CAMERA_MODEL_RIGHT':
             self.label['BEGIN_GROUP'] = 'GEOMETRIC_CAMERA_MODEL'
             self.label['MODEL_TYPE'] = 'CAHVOR'
             self.label['MODEL_COMPONENT_ID'] = ["C", "A", "H", "V", "O", "R", "Hc", "Vc", "Vs", "V1"]
@@ -162,7 +164,7 @@ class PDSGenerator(PDS3Image):
             self.label['MODEL_COMPONENT_10'] = V1
             self.label['END_GROUP'] = 'GEOMETRIC_CAMERA_MODEL'
 
-        elif group_name == 'COLLINEAR_CAMERA_MODEL_LEFT' and self.yaml_data['Camera'] == 'LEFT':
+        elif group_name == 'COLLINEAR_CAMERA_MODEL_LEFT':
             self.label['BEGIN_GROUP'] = 'GEOMETRIC_CAMERA_MODEL'
             self.label['MODEL_TYPE'] = 'COLLINEAR'
             self.label['MODEL_COMPONENT_ID'] = ["C", "F", "PxS", "P", "ANG", "k"]
@@ -185,7 +187,7 @@ class PDSGenerator(PDS3Image):
             self.label['MODEL_COMPONENT_6'] = k
             self.label['END_GROUP'] = 'GEOMETRIC_CAMERA_MODEL'  
 
-        elif group_name == 'COLLINEAR_CAMERA_MODEL_RIGHT' and self.yaml_data['Camera'] == 'RIGHT':
+        elif group_name == 'COLLINEAR_CAMERA_MODEL_RIGHT':
             self.label['BEGIN_GROUP'] = 'GEOMETRIC_CAMERA_MODEL'
             self.label['MODEL_TYPE'] = 'COLLINEAR'
             self.label['MODEL_COMPONENT_ID'] = ["C", "F", "PxS", "P", "ANG", "k"]
