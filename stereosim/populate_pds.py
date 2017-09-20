@@ -66,14 +66,15 @@ class PDSGenerator(PDS3Image):
         if self.yaml_data['Camera'] == 'LEFT':
             self.label = self._add_group('CAHVOR_CAMERA_MODEL_LEFT')
             self.label = self._add_group('COLLINEAR_CAMERA_MODEL_LEFT')
-            #self.label = self._add_group('LCEL_COORDINATE_SYSTEM')
-            #self.label = self._add_group('LCAZ_COORDINATE_SYSTEM')
+            #self.label = self._add_group('LCAM_EL_TRANSLATION')
+            #self.label = self._add_group('LCAM_AZ_TRANSLATION')
         if self.yaml_data['Camera'] == 'RIGHT':
             self.label = self._add_group('CAHVOR_CAMERA_MODEL_RIGHT')
             self.label = self._add_group('COLLINEAR_CAMERA_MODEL_RIGHT')
-            #self.label = self._add_group('RCEL_COORDINATE_SYSTEM')
-            #self.label = self._add_group('RCAZ_COORDINATE_SYSTEM')
+            #self.label = self._add_group('RCAM_EL_TRANSLATION')
+            #self.label = self._add_group('RCAM_AZ_TRANSLATION')
         #self.label = self._add_group('RSM_COORDINATE_SYSTEM')
+        #self.label = self._add_group('PTU_AXES_HEIGHTS')
         self.label = self._add_group('ROVER_FRAME')
         self.label = self._add_group('SITE_FRAME')
         self.label['IMAGE']['IMAGE_CREATION_TIME'] =  pds_date
@@ -97,10 +98,13 @@ class PDSGenerator(PDS3Image):
             self.label['BEGIN_GROUP'] = 'PTU_ARTICULATION_STATE'
             self.label['ARTICULATION_DEVICE_ID'] = "PTU"
             self.label['ARTICULATION_DEVICE_NAME'] = "FLIR Pan-Tilt Unit"
-            self.label['PP'] = int(self.yaml_data['PP'])
-            self.label['TP'] = int(self.yaml_data['TP'])
-            self.label['AZIMUTH'] = self.yaml_data['AZIMUTH']
-            self.label['ELEVATION'] = self.yaml_data['ELEVATION']
+            self.label['ARTICULATION_DEVICE_ANGLE'] = [int(self.yaml_data['AZIMUTH']), int(self.yaml_data['ELEVATION'])]
+            self.label['ARTICULATION_DEVICE_ANGLE_NAME'] = ["AZIMUTH-MEASURED", "ELEVATION-MEASURED"]
+            #self.label['PP'] = int(self.yaml_data['PP'])
+            #self.label['TP'] = int(self.yaml_data['TP'])
+            #self.label['AZIMUTH'] = self.yaml_data['AZIMUTH']
+            #self.label['ELEVATION'] = self.yaml_data['ELEVATION']
+            self.label['ARTICULATION_DEVICE_MODE'] = 'DEPLOYED'
             self.label['END_GROUP'] = 'PTU_ARTICULATION_STATE'
 
         elif group_name == 'CAHVOR_CAMERA_MODEL_LEFT':
@@ -113,16 +117,18 @@ class PDSGenerator(PDS3Image):
             self.label['MODEL_COMPONENT_UNIT'] = ["METER", "N/A", "PIXEL", "PIXEL", "N/A", "N/A"]
             cahv = CAHVmodel.compute(self.yaml_data['Camera'])
 
-            C = [3.451904, 3.258335, 1.254338]
-            A = [-0.698217, -0.681994, -0.217661]
-            H = [-3768.955776, 1750.845082, -391.3237751]
-            V = [-78.87639227, -162.8340073, -4019.463883]
-            O = [-0.698217, -0.681994595, -0.21766119]
-            R = [0, 0.169540938, -0.091659605]
+            C = [0, 0, 0]
+            A = [0.999762, 0.021815, 0.000000]
+            H = [1429.297020, 3942.905305, 0.000000]
+            V = [1043.675052, 22.773071, 3910.787050]
+            O = [0.999762, 0.021815, 0.000000]
+            R = [0, 0.164600, -0.084529]
             Hc = 1522.659078
             Vc = 1041.005182
             Vs = 3886.530592
             V1 = 0.166722249
+            TV = [0, 0.11, -0.144]
+            Q = [0, -0.9999, 0, -0.0109]
 
             self.label['MODEL_COMPONENT_1'] = C
             self.label['MODEL_COMPONENT_2'] = A
@@ -130,6 +136,9 @@ class PDSGenerator(PDS3Image):
             self.label['MODEL_COMPONENT_4'] = V
             self.label['MODEL_COMPONENT_5'] = O
             self.label['MODEL_COMPONENT_6'] = R
+            self.label['MODEL_TRANSFORM_VECTOR'] = TV
+            self.label['MODEL_TRANSFORM_VECTOR_UNIT'] = 'METER'
+            self.label['MODEL_TRANSFORM_QUATERNION'] = Q
             self.label['END_GROUP'] = 'GEOMETRIC_CAMERA_MODEL'
 
         elif group_name == 'CAHVOR_CAMERA_MODEL_RIGHT':
@@ -143,16 +152,18 @@ class PDSGenerator(PDS3Image):
             
             cahv = CAHVmodel.compute(self.yaml_data['Camera'])
 
-            C = [3.451904, 3.258335, 1.254338]
-            A = [-0.698217, -0.681994595, -0.21766119]
-            H = [-3782.37833, 1773.539076, -390.3432399]
-            V = [-73.08384812, -157.7415041, -4043.988964]
-            O = [-0.698217, -0.681994595, -0.21766119]
-            R = [0, 0.167802847, -0.091829942]
+            C = [0, 0.252, 0]
+            A = [0.999762, -0.021815, 0.000000]
+            H = [1614.223560, 3839.925763, 0.000000]
+            V = [1042.262663, -22.742252, 3874.226066]
+            O = [0.999762, -0.021815, 0.000000]
+            R = [0, 0.169487, -0.100739]
             Hc = 1516.339359
             Vc = 1038.826689
             Vs = 3912.148959
             V1 = 0.166722334
+            TV = [0, 0.11, 0.108]
+            Q = [0, 0.9999, 0, -0.0109]
 
             self.label['MODEL_COMPONENT_1'] = C
             self.label['MODEL_COMPONENT_2'] = A
@@ -160,108 +171,134 @@ class PDSGenerator(PDS3Image):
             self.label['MODEL_COMPONENT_4'] = V
             self.label['MODEL_COMPONENT_5'] = O
             self.label['MODEL_COMPONENT_6'] = R
+            self.label['MODEL_TRANSFORM_VECTOR'] = TV
+            self.label['MODEL_TRANSFORM_VECTOR_UNIT'] = 'METER'
+            self.label['MODEL_TRANSFORM_QUATERNION'] = Q
             self.label['END_GROUP'] = 'GEOMETRIC_CAMERA_MODEL'
 
         elif group_name == 'COLLINEAR_CAMERA_MODEL_LEFT':
             self.label['BEGIN_GROUP'] = 'GEOMETRIC_CAMERA_MODEL'
             self.label['MODEL_TYPE'] = 'COLLINEAR'
-            self.label['MODEL_COMPONENT_ID'] = ["C", "F", "PxS", "P", "ANG", "k"]
-            self.label['MODEL_COMPONENT_NAME'] = ["CENTER", "FOCAL_LENGTH", "PIXEL_SIZE",
-                                                  "PRINICIPAL", "ROT_ANG[OMEGA,PHI,KAPPA]", "DISTORTION_COEFFICIENTS"]
+            self.label['MODEL_COMPONENT_ID'] = ["C", "F", "f", "PxS", "P", "ANG", "ROT_MAT", "k"]
+            self.label['MODEL_COMPONENT_NAME'] = ["CENTER", "FOCAL_LENGTH", "fx/fy","PIXEL_SIZE",
+                                                  "PRINCIPAL", "ROT_ANG[OMEGA,PHI,KAPPA]", "ROTATION_MATRIX", "DISTORTION_COEFFICIENTS"]
 
-            C = [3.451904, 3.258335, 1.254338]
-            F = 28.76033845
+            self.label['MODEL_COMPONENT_UNIT'] = ["METER","MILLIMETER","PIXEL","MILLIMETER","MILLIMETER","DEGREE","RADIANS","N/A"]
+            C = [0, 0, 0]
+            F = 28.939824
+            f = [3910.787050, 3910.787050]
             PxS = [0.0074, 0.0074]
-            P = [-0.098722821, -0.125838347]
-            ANG = [-72.2993175, 44.2841281, 166.5327547]
-            k = [0, 0.000200218923, -0.000000130736213]
+            P = [-0.155615, -0.147434]
+            ANG = [0, -1.25, 0]
+            ROT_MAT = [[0.999762, 0, 0.021815],[0, -1.0, 0],[0.021815, 0, -0.999762]]
+            k = [0, 0.000196533895, 0]
 
 
             self.label['MODEL_COMPONENT_1'] = C
             self.label['MODEL_COMPONENT_2'] = F
-            self.label['MODEL_COMPONENT_3'] = PxS
-            self.label['MODEL_COMPONENT_4'] = P
-            self.label['MODEL_COMPONENT_5'] = ANG
-            self.label['MODEL_COMPONENT_6'] = k
+            self.label['MODEL_COMPONENT_3'] = f
+            self.label['MODEL_COMPONENT_4'] = PxS
+            self.label['MODEL_COMPONENT_5'] = P
+            self.label['MODEL_COMPONENT_6'] = ANG
+            self.label['MODEL_COMPONENT_7'] = ROT_MAT
+            self.label['MODEL_COMPONENT_8'] = k
             self.label['END_GROUP'] = 'GEOMETRIC_CAMERA_MODEL'  
 
         elif group_name == 'COLLINEAR_CAMERA_MODEL_RIGHT':
             self.label['BEGIN_GROUP'] = 'GEOMETRIC_CAMERA_MODEL'
             self.label['MODEL_TYPE'] = 'COLLINEAR'
-            self.label['MODEL_COMPONENT_ID'] = ["C", "F", "PxS", "P", "ANG", "k"]
-            self.label['MODEL_COMPONENT_NAME'] = ["CENTER", "FOCAL_LENGTH", "PIXEL_SIZE",
-                                                  "PRINICIPAL", "ROT_ANG[OMEGA,PHI,KAPPA]", "DISTORTION_COEFFICIENTS"]
+            self.label['MODEL_COMPONENT_ID'] = ["C", "F", "f", "PxS", "P", "ANG", "ROT_MAT", "k"]
+            self.label['MODEL_COMPONENT_NAME'] = ["CENTER", "FOCAL_LENGTH", "fx/fy", "PIXEL_SIZE",
+                                                  "PRINCIPAL", "ROT_ANG[OMEGA,PHI,KAPPA]","ROTATION_MATRIX", "DISTORTION_COEFFICIENTS"]
 
-            C = [3.451904, 3.258335, 1.254338]
-            F = 28.9499023
+            self.label['MODEL_COMPONENT_UNIT'] = ["METER","MILLIMETER","PIXEL","MILLIMETER","MILLIMETER","DEGREE","RADIANS","N/A"]
+            C = [0, 0.252, 0]
+            F = 28.669273
+            f = [3874.226066, 3874.226066]
             PxS = [0.0074, 0.0074]
-            P = [-0.14548874, -0.1097175]
-            ANG = [-72.29916094, 44.28412813, 166.5327617]
-            k = [0, 0.000204968252, -0.000000133968289]
+            P = [-0.043868, -0.136980]
+            ANG = [0, 1.25, 0]
+            ROT_MAT = [[0.999762, 0, -0.021815],[0, -1, 0],[-0.021815, 0, -0.999762]]
+            k = [0, 0.000206206597, 0]
 
             self.label['MODEL_COMPONENT_1'] = C
             self.label['MODEL_COMPONENT_2'] = F
-            self.label['MODEL_COMPONENT_3'] = PxS
-            self.label['MODEL_COMPONENT_4'] = P
-            self.label['MODEL_COMPONENT_5'] = ANG
-            self.label['MODEL_COMPONENT_6'] = k
+            self.label['MODEL_COMPONENT_3'] = f
+            self.label['MODEL_COMPONENT_4'] = PxS
+            self.label['MODEL_COMPONENT_5'] = P
+            self.label['MODEL_COMPONENT_6'] = ANG
+            self.label['MODEL_COMPONENT_7'] = ROT_MAT
+            self.label['MODEL_COMPONENT_8'] = k
             self.label['END_GROUP'] = 'GEOMETRIC_CAMERA_MODEL'
 
-        elif group_name == 'RCEL_COORDINATE_SYSTEM':
-            self.label['BEGIN_GROUP'] = 'RIGHT_CAMERA_EL_COORDINATE_SYSTEM'
+        elif group_name == 'RCAM_EL_TRANSLATION':
+            self.label['BEGIN_GROUP'] = 'RCAM_EL_TRANSLATION'
             self.label['COORDINATE_SYSTEM_NAME'] = 'RC_HEAD_FRAME'
-            self.label['COORDINATE_SYSTEM_INDEX'] = [1,0,0,0,0,0,0,0,0,0]
-            self.label['COORDINATE_SYSTEM_INDEX_NAME'] = ["SITE","DRIVE","POSE","ARM","CHIMRA","DRILL","RSM","HGA","DRT","IC"]
-            self.label['ORIGIN_OFFSET_VECTOR'] = [0,10.8, -11]
-            self.label['ORIGIN_OFFSET_VECTOR_UNIT'] = "CENTIMETER"
+            self.label['ORIGIN_OFFSET_VECTOR'] = [0.0, 0.108, -0.11]
+            self.label['ORIGIN_OFFSET_VECTOR_INDEX'] = ['X', 'Y', 'Z']
+            self.label['ORIGIN_OFFSET_VECTOR_UNIT'] = "METERS"
+            self.label['ORIGIN_ROTATION_QUATERION'] = [1, 0, 0, 0]
+            self.label['ORIGIN_ANGULAR_OFFSET'] = [1.25]
+            self.label['ORIGIN_ANGULAR_OFFSET_UNIT'] = 'DEGREES'
             self.label['POSITIVE_ELEVATION_DIRECTION'] = "UP"
             self.label['REFERENCE_COORD_SYSTEM_NAME'] = 'PTU_ELEVATION_AXIS'
-            self.label['REFERENCE_COORD_SYSTEM_INDEX'] = [1,0,0,0,0,0,0,0,0,0]
-            self.label['END_GROUP'] = 'RIGHT_CAMERA_COORDINATE_SYSTEM'
+            self.label['END_GROUP'] = 'RCAM_EL_TRANSLATION'
 
-        elif group_name == 'LCEL_COORDINATE_SYSTEM':
-            self.label['BEGIN_GROUP'] = 'LEFT_CAMERA_EL_COORDINATE_SYSTEM'
+        elif group_name == 'LCAM_EL_TRANSLATION':
+            self.label['BEGIN_GROUP'] = 'LCAM_EL_TRANSLATION'
             self.label['COORDINATE_SYSTEM_NAME'] = 'LC_HEAD_FRAME'
-            self.label['COORDINATE_SYSTEM_INDEX'] = [1,0,0,0,0,0,0,0,0,0]
-            self.label['COORDINATE_SYSTEM_INDEX_NAME'] = ["SITE","DRIVE","POSE","ARM","CHIMRA","DRILL","RSM","HGA","DRT","IC"]
-            self.label['ORIGIN_OFFSET_VECTOR'] = [0,-14.4,-11]
-            self.label['ORIGIN_OFFEST_VECTOR_UNIT'] = "CENTIMETER"
-            self.label['POSITIVE_ELEVEATION_DIRECTION'] = "UP"
+            self.label['ORIGIN_OFFSET_VECTOR'] = [0.0, -0.144, -0.11]
+            self.label['ORIGIN_OFFSET_VECTOR_INDEX'] = ['X', 'Y', 'Z']
+            self.label['ORIGIN_OFFEST_VECTOR_UNIT'] = "METERS"
+            self.label['ORIGIN_ROTATION_QUATERION'] = [1, 0, 0, 0]
+            self.label['ORIGIN_ANGULAR_OFFSET'] = [-1.25]
+            self.label['ORIGIN_ANGULAR_OFFSET_UNIT'] = 'DEGREES'
+            self.label['POSITIVE_ELEVATION_DIRECTION'] = "UP"
             self.label['REFERENCE_COORD_SYSTEM_NAME'] = 'PTU_ELEVATION_AXIS'
-            self.label['REFERENCE_COORD_SYSTEM_INDEX'] = [1,0,0,0,0,0,0,0,0,0]
-            self.label['END_GROUP'] = 'LEFT_CAMERA_COORDINATE_SYSTEM'
+            self.label['END_GROUP'] = 'LCAM_EL_TRANSLATION'
 
-        elif group_name == 'RCAZ_COORDINATE_SYSTEM':
-            self.label['BEGIN_GROUP'] = 'RIGHT_CAMERA_AZ_COORDINATE_SYSTEM'
+        elif group_name == 'RCAM_AZ_TRANSLATION':
+            self.label['BEGIN_GROUP'] = 'RCAM_AZ_TRANSLATION'
             self.label['COORDINATE_SYSTEM_NAME'] = 'RC_HEAD_FRAME'
-            self.label['COORDINATE_SYSTEM_INDEX'] = [1,0,0,0,0,0,0,0,0,0]
-            self.label['COORDINATE_SYSTEM_INDEX_NAME'] = ["SITE","DRIVE","POSE","ARM","CHIMRA","DRILL","RSM","HGA","DRT","IC"]
-            self.label['ORIGIN_OFFSET_VECTOR'] = [0,10.8, -23.98]
-            self.label['ORIGIN_OFFSET_VECTOR_UNIT'] = "CENTIMETER"
+            self.label['ORIGIN_OFFSET_VECTOR'] = [0.0, 0.108, -0.2398]
+            self.label['ORIGIN_OFFSET_VECTOR_INDEX'] = ['X', 'Y', 'Z']
+            self.label['ORIGIN_OFFSET_VECTOR_UNIT'] = "METERS"
             self.label['POSITIVE_ELEVATION_DIRECTION'] = "UP"
+            self.label['ORIGIN_ROTATION_QUATERION'] = [1, 0, 0, 0]
+            self.label['ORIGIN_ANGULAR_OFFSET'] = [1.25]
+            self.label['ORIGIN_ANGULAR_OFFSET_UNIT'] = 'DEGREES'
             self.label['REFERENCE_COORD_SYSTEM_NAME'] = 'PTU_AZIMUTH_AXIS'
-            self.label['REFERENCE_COORD_SYSTEM_INDEX'] = [1,0,0,0,0,0,0,0,0,0]
-            self.label['END_GROUP'] = 'RIGHT_CAMERA_AZ_COORDINATE_SYSTEM'
+            self.label['END_GROUP'] = 'RCAM_AZ_TRANSLATION'
 
-        elif group_name == 'LCAZ_COORDINATE_SYSTEM':
-            self.label['BEGIN_GROUP'] = 'LEFT_CAMERA_AZ_COORDINATE_SYSTEM'
+        elif group_name == 'LCAM_AZ_TRANSLATION':
+            self.label['BEGIN_GROUP'] = 'LCAM_AZ_TRANSLATION'
             self.label['COORDINATE_SYSTEM_NAME'] = 'LC_HEAD_FRAME'
-            self.label['COORDINATE_SYSTEM_INDEX'] = [1,0,0,0,0,0,0,0,0,0]
-            self.label['COORDINATE_SYSTEM_INDEX_NAME'] = ["SITE","DRIVE","POSE","ARM","CHIMRA","DRILL","RSM","HGA","DRT","IC"]
-            self.label['ORIGIN_OFFSET_VECTOR'] = [0,10.8, -23.98]
-            self.label['ORIGIN_OFFSET_VECTOR_UNIT'] = "CENTIMETER"
-            self
+            self.label['ORIGIN_OFFSET_VECTOR'] = [0.0, 0.108, -0.2398]
+            self.label['ORIGIN_OFFSET_VECTOR_INDEX'] = ['X', 'Y', 'Z']
+            self.label['ORIGIN_OFFSET_VECTOR_UNIT'] = "METERS"
+            self.label['ORIGIN_ROTATION_QUATERION'] = [1, 0, 0, 0]
+            self.label['ORIGIN_ANGULAR_OFFSET'] = [-1.25]
+            self.label['ORIGIN_ANGULAR_OFFSET_UNIT'] = 'DEGREES'
             self.label['POSITIVE_ELEVATION_DIRECTION'] = "UP"
             self.label['REFERENCE_COORD_SYSTEM_NAME'] = 'PTU_AZIMUTH_AXIS'
-            self.label['REFERENCE_COORD_SYSTEM_INDEX'] = [1,0,0,0,0,0,0,0,0,0]
-            self.label['END_GROUP'] = 'LEFT_CAMERA_AZ_COORDINATE_SYSTEM'
+            self.label['END_GROUP'] = 'LCAM_AZ_TRANSLATION'
+
+        elif group_name == 'PTU_AXES_HEIGHTS':
+            self.label['BEGIN_GROUP'] = 'PTU_AXES_HEIGHTS'
+            self.label['COORD_SYS_UNIT'] = 'METERS'
+            self.label['AZ_AXIS_HEIGHT'] = '1.305'
+            self.label['EL_AXIS_HEIGHT'] = '1.4348'
+            self.label['OPTICAL_CENTER_HEIGHT'] = '1.5448'
+            self.label['REFERENCE_COORDINATE_SYSTEM'] = 'GROUND_BENEATH_TRIPOD'
+            self.label['END_GROUP'] = 'PTU_AXES_HEIGHTS'
 
         # This one is pointing of CAMERAS wrt rover frame (TRIPOD).
         elif group_name == 'ROVER_FRAME':
             self.label['BEGIN_GROUP'] = 'ROVER_DERIVED_GEOMETRY_PARMS'
-            self.label['INSTRUMENT_AZIMUTH'] = self.yaml_data['AZIMUTH']
-            self.label['INSTRUMENT_ELEVATION'] = self.yaml_data['ELEVATION']
+            self.label['INSTRUMENT_AZIMUTH'] = '0 <deg>' #self.yaml_data['AZIMUTH']
+            self.label['INSTRUMENT_ELEVATION'] = '0 <deg>' #self.yaml_data['ELEVATION']
             self.label['POSITIVE_AZIMUTH_DIRECTION'] = 'CLOCKWISE'
+            self.label['ORIGIN_ANGULAR_OFFSET_UNIT'] = 'DEGREES'
             self.label['REFERENCE_COORD_SYSTEM_INDEX'] = [1,0,0,0,0,0,1,0,0,0]
             self.label['REFERENCE_COORD_SYSTEM_NAME'] = "ROVER_NAV_FRAME"
             self.label['END_GROUP'] = 'ROVER_DERIVED_GEOMETRY_PARMS'
@@ -269,8 +306,8 @@ class PDSGenerator(PDS3Image):
         # This one is pointing of cameras wrt to site frame
         elif group_name == 'SITE_FRAME':
             self.label['BEGIN_GROUP'] = 'SITE_DERIVED_GEOMETRY_PARMS'
-            self.label['INSTRUMENT_AZIMUTH'] = 'Angle from magnetic north<deg>'
-            self.label['INSTRUMENT_ELEVATION'] = '<deg>'
+            self.label['INSTRUMENT_AZIMUTH'] = '300 <deg>'
+            self.label['INSTRUMENT_ELEVATION'] = '0 <deg>'
             self.label['POSITIVE_AZIMUTH_DIRECTION'] = "CLOCKWISE"
             self.label['REFERENCE_COORD_SYSTEM_INDEX'] = '1'
             self.label['REFERENCE_COORD_SYSTEM_NAME'] = "SITE_FRAME"

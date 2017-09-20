@@ -89,7 +89,7 @@ class CAHVmodel(object):
             to be added to get back to origin position of PTU.
         """
         f = self._cam_model['f']
-        # http://www.digicamdb.com/specs/canon_eos-60d/
+        # http://www.digicamdb.com/specs/canon_eos-d60/
         pixelsize = self._cam_model['pixelsize']
         image_size = self._cam_model['image_size']
 
