@@ -541,6 +541,7 @@ class PDS3LabelEncoder(pvl.PVLEncoder):
     def encode(self, module, stream):
         self.assignment_col = self._detect_assignment_col(module)
         super(PDS3LabelEncoder, self).encode(module, stream)
+        stream.write(self.newline)
 
     def encode_raw_assignment(self, key, value, level, stream):
         indented_key = (level * self.indentation) + key
