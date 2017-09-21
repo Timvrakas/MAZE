@@ -183,12 +183,12 @@ class PDSGenerator(PDS3Image):
             self.label['MODEL_COMPONENT_NAME'] = ["CENTER", "FOCAL_LENGTH", "fx/fy","PIXEL_SIZE",
                                                   "PRINCIPAL", "ROT_ANG[OMEGA,PHI,KAPPA]", "ROTATION_MATRIX", "DISTORTION_COEFFICIENTS"]
 
-            self.label['MODEL_COMPONENT_UNIT'] = ["METER","MILLIMETER","PIXEL","MILLIMETER","MILLIMETER","DEGREE","RADIANS","N/A"]
+            self.label['MODEL_COMPONENT_UNIT'] = ["METER","METER","PIXEL","METER","METER","DEGREE","RADIANS","N/A"]
             C = [0, 0, 0]
-            F = 28.939824
+            F = 0.028939824
             f = [3910.787050, 3910.787050]
-            PxS = [0.0074, 0.0074]
-            P = [-0.155615, -0.147434]
+            PxS = [0.0000074, 0.0000074]
+            P = [-0.000155615, -0.000147434]
             ANG = [0, -1.25, 0]
             ROT_MAT = [[0.999762, 0, 0.021815],[0, -1.0, 0],[0.021815, 0, -0.999762]]
             k = [0, 0.000196533895, 0]
@@ -211,12 +211,12 @@ class PDSGenerator(PDS3Image):
             self.label['MODEL_COMPONENT_NAME'] = ["CENTER", "FOCAL_LENGTH", "fx/fy", "PIXEL_SIZE",
                                                   "PRINCIPAL", "ROT_ANG[OMEGA,PHI,KAPPA]","ROTATION_MATRIX", "DISTORTION_COEFFICIENTS"]
 
-            self.label['MODEL_COMPONENT_UNIT'] = ["METER","MILLIMETER","PIXEL","MILLIMETER","MILLIMETER","DEGREE","RADIANS","N/A"]
+            self.label['MODEL_COMPONENT_UNIT'] = ["METER","METER","PIXEL","METER","METER","DEGREE","RADIANS","N/A"]
             C = [0, 0.252, 0]
-            F = 28.669273
+            F = 0.028669273
             f = [3874.226066, 3874.226066]
-            PxS = [0.0074, 0.0074]
-            P = [-0.043868, -0.136980]
+            PxS = [0.0000074, 0.0000074]
+            P = [-0.000043868, -0.000136980]
             ANG = [0, 1.25, 0]
             ROT_MAT = [[0.999762, 0, -0.021815],[0, -1, 0],[-0.021815, 0, -0.999762]]
             k = [0, 0.000206206597, 0]
