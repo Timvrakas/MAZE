@@ -98,7 +98,7 @@ class PDSGenerator(PDS3Image):
             self.label['BEGIN_GROUP'] = 'PTU_ARTICULATION_STATE'
             self.label['ARTICULATION_DEVICE_ID'] = "PTU"
             self.label['ARTICULATION_DEVICE_NAME'] = "FLIR Pan-Tilt Unit"
-            self.label['ARTICULATION_DEVICE_ANGLE'] = [int(self.yaml_data['AZIMUTH']), int(self.yaml_data['ELEVATION'])]
+            self.label['ARTICULATION_DEVICE_ANGLE'] = [round(self.yaml_data['AZIMUTH']), round(self.yaml_data['ELEVATION'])]
             self.label['ARTICULATION_DEVICE_ANGLE_NAME'] = ["AZIMUTH-MEASURED", "ELEVATION-MEASURED"]
             #self.label['PP'] = int(self.yaml_data['PP'])
             #self.label['TP'] = int(self.yaml_data['TP'])
@@ -295,8 +295,8 @@ class PDSGenerator(PDS3Image):
         # This one is pointing of CAMERAS wrt rover frame (TRIPOD).
         elif group_name == 'ROVER_FRAME':
             self.label['BEGIN_GROUP'] = 'ROVER_DERIVED_GEOMETRY_PARMS'
-            self.label['INSTRUMENT_AZIMUTH'] = '0 <deg>' #self.yaml_data['AZIMUTH']
-            self.label['INSTRUMENT_ELEVATION'] = '0 <deg>' #self.yaml_data['ELEVATION']
+            self.label['INSTRUMENT_AZIMUTH'] = '{} <deg>'.format(round(self.yaml_data['AZIMUTH']))
+            self.label['INSTRUMENT_ELEVATION'] = '{} <deg>'.format(round(self.yaml_data['ELEVATION']))
             self.label['POSITIVE_AZIMUTH_DIRECTION'] = 'CLOCKWISE'
             self.label['ORIGIN_ANGULAR_OFFSET_UNIT'] = 'DEGREES'
             self.label['REFERENCE_COORD_SYSTEM_INDEX'] = [1,0,0,0,0,0,1,0,0,0]
@@ -306,8 +306,8 @@ class PDSGenerator(PDS3Image):
         # This one is pointing of cameras wrt to site frame
         elif group_name == 'SITE_FRAME':
             self.label['BEGIN_GROUP'] = 'SITE_DERIVED_GEOMETRY_PARMS'
-            self.label['INSTRUMENT_AZIMUTH'] = '300 <deg>'
-            self.label['INSTRUMENT_ELEVATION'] = '0 <deg>'
+            self.label['INSTRUMENT_AZIMUTH'] = 'null <deg>'
+            self.label['INSTRUMENT_ELEVATION'] = 'null <deg>'
             self.label['POSITIVE_AZIMUTH_DIRECTION'] = "CLOCKWISE"
             self.label['REFERENCE_COORD_SYSTEM_INDEX'] = '1'
             self.label['REFERENCE_COORD_SYSTEM_NAME'] = "SITE_FRAME"
@@ -410,7 +410,8 @@ class PDSGenerator(PDS3Image):
         """
         Access the image acquisition time from intial image
         and convert to PDS format for storage in PDS header.
-
+        Also collect focal length from exif header.
+        
         As of this writing:
         EXIF data format: 2017:02:21 12:36:11
         PDS date format:  2017-02-21T12:36:11.sssZ
@@ -425,6 +426,8 @@ class PDSGenerator(PDS3Image):
         -------
         pds_date: string
             Image acquisition time in PDS format
+        fl : string
+            focal length of lens read by camera.
         """
         with open(filepath, 'rb') as f:
             meta = exifread.process_file(f, details=False)

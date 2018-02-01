@@ -1,8 +1,15 @@
 from __future__ import print_function
 from multiprocessing.dummy import Pool as ThreadPool
+from functools import partial
 
+from time import sleep
+import math
+import pickle
 import os
+import json
+import serial
 import logging
+import io
 import sys
 import math
 import yaml
@@ -10,7 +17,7 @@ import gphoto2 as gp
 from enum import IntEnum
 from flir_ptu.ptu import PTU
 import exifread
-
+#LOGGER = logging.getLogger(__name__)
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +49,9 @@ class StereoCamera():
         with `LEFTNAME` or `RIGHTNAME`, it will be stored under the variable
         `cameras`
         """
+        self.context
         _cameras = self.context.camera_autodetect()
+        msg = [(False, "None"), (False, "None")]
         if len(_cameras) == 0:
             raise Exception("Unable to find any camera")
         # Stores the left and right camera
@@ -55,19 +64,37 @@ class StereoCamera():
                 "Count: {}, Name: {}, Addr: {}".format(index, name, addr))
             # Get the ports and search for the camera
             idx = ports.lookup_path(addr)
-            camera = gp.Camera()
-            camera.set_port_info(ports[idx])
-            camera.init(self.context)
-            # Check if the ownername matches to given values
-            ownername = self._get_config("ownername", camera)
-            if ownername == self.LEFTNAME:
-                camera._camera_name = self.LEFTNAME
-                camera._camera_id = self.cameras[CameraID.LEFT]
-                self.cameras[CameraID.LEFT] = camera
-            elif ownername == self.RIGHTNAME:
-                camera._camera_name = self.RIGHTNAME
-                camera._camera_id = self.cameras[CameraID.RIGHT]
-                self.cameras[CameraID.RIGHT] = camera
+            try:
+                camera = gp.Camera()
+                camera.set_port_info(ports[idx])
+                camera.init(self.context)
+                # Check if the ownername matches to given values
+                ownername = self._get_config("ownername", camera)
+                abilities = gp.check_result(gp.gp_camera_get_abilities(camera))
+            except gp.GPhoto2Error as error:
+                print(str(error))
+            else:
+                if ownername == self.LEFTNAME:
+                    camera._camera_name = self.LEFTNAME
+                    camera._camera_id = CameraID.LEFT
+                    self.cameras[CameraID.LEFT] = camera
+                    msg[CameraID.LEFT] = True, "Connected: " + \
+                            str(abilities.model)
+                elif ownername == self.RIGHTNAME:
+                    camera._camera_name = self.RIGHTNAME
+                    camera._camera_id = CameraID.RIGHT
+                    self.cameras[CameraID.RIGHT] = camera
+                    msg[CameraID.RIGHT] = True, "Connected: " + \
+                            str(abilities.model)
+
+        failure = (self.cameras[CameraID.LEFT] is None) or (self.cameras[CameraID.RIGHT] is None)
+        imu_success = True
+        try:
+            print("Trying IMU")
+            self.imu = serial.Serial('/dev/ttyACM0', 115200)
+        except Exception:
+            imu_success = False
+        return failure, msg, imu_success
 
     def get_summary(self):
         """ Prints the summary of the cameras as defined by gphoto2
@@ -208,6 +235,17 @@ class StereoCamera():
         -------
         Array : [Left camera filename, Right camera filename]
         """
+        print('resetting imu input buffer')
+        self.imu.reset_input_buffer()
+        print('imu readline')
+        self.imu.readline()
+        split = self.imu.readline().decode().strip().split(";")
+        print('split length:', len(split))
+        print(split) 
+        data = {'Lat': split[0], 'Lon': split[1], 'Alt': split[2], 'HDOP': split[3], 'Date': split[4], 'Time': split[5], 'Fix': split[6], 'EulX': split[7], 'EulY': split[8], 'EulZ': split[9], 'Diag_System': split[10], 'Diag_Gyro': split[11], 'Diag_Acc': split[12], 'Diag_Mag': split[13]}
+        with open("data_output", 'wb') as outfile: pickle.dump(data, outfile)
+        outfile.close()
+        print('outfile closed')
         if not os.path.isdir(storage_path):
             raise Exception("Invalid path: {}".format(storage_path))
         logger.debug(os.path.join(storage_path, 'LEFT'))
@@ -239,7 +277,7 @@ class StereoCamera():
             cpath = self.get_image_from_camera(cam, location, folder, filename)
             stored_file_paths.append(cpath)
 
-        return stored_file_paths
+        return stored_file_paths, data
 
     def trigger_capture(self, camera):
         """ Trigger image capture
@@ -289,6 +327,37 @@ class StereoCamera():
             self.create_label(camera, camera_file)
         return camera_file
 
+    def toQuaternion(self, eD):
+
+        yaw = float(eD[0])
+        pitch = float(eD[1])
+        roll = float(eD[2])
+
+        print(yaw)
+        print(type(yaw))
+        cy = math.cos(yaw * 0.5)
+        sy = math.sin(yaw * 0.5)
+        cr = math.cos(roll * 0.5)
+        sr = math.sin(roll * 0.5)
+        cp = math.cos(pitch * 0.5)
+        sp = math.sin(pitch * 0.5)
+
+        w = cy * cr * cp + sy * sr * sp
+        x = cy * sr * cp - sy * cr * sp
+        y = cy * cr * sp + sy * sr * cp
+        z = sy * cr * cp - cy * sr * sp
+        q = [w, x, y, z]
+
+        return q
+
+    def getIMU(self):
+        fileObject = open("data_output", "rb")
+        dic = pickle.load(fileObject)
+        EulerData = [dic['EulX'], dic['EulY'], dic['EulZ']]
+        result = self.toQuaternion(EulerData)
+
+        return result, dic
+    
     def create_label(self, camera, file_path):
         """ Create label for captured image.
 
@@ -307,13 +376,16 @@ class StereoCamera():
         if ptu.stream.is_connected:
             pp = ptu.pan()
             tp = ptu.tilt()
-            az = ptu.pan_angle()
+            az = round(float(pp)*(92.5714/3600),5)
+            #az = ptu.pan_angle()
             el = ptu.tilt_angle()
         else:
             pp = None
             tp = None
             az = None
             el = None
+
+        IMU_quaternion, IMU_dict = self.getIMU()
 
         yaml_path = os.path.splitext(file_path)[0]
         contents = {
@@ -322,7 +394,10 @@ class StereoCamera():
             'PP': float(pp),
             'TP': float(tp),
             'f': float(focal_length),
-            'Camera': camera._camera_name
+            'Camera': camera._camera_name,
+            'below values obtained by stereosim IMU:': 'see below',
+            '' : IMU_dict,
+            'IMU_quaternion' : IMU_quaternion
         }
         with open('{}.lbl'.format(yaml_path), 'w') as lblfile:
             yaml.dump(contents, lblfile, default_flow_style=False)
