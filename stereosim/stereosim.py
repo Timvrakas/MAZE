@@ -379,6 +379,9 @@ class StereoCamera():
             az = round(float(pp)*(92.5714/3600),5)
             #az = ptu.pan_angle()
             el = ptu.tilt_angle()
+            #pr = ptu.pan_res()
+            #tr = ptu.tilt_res()
+            #temp = ptu.ptu_temp()
         else:
             pp = None
             tp = None
@@ -394,6 +397,9 @@ class StereoCamera():
             'PP': float(pp),
             'TP': float(tp),
             'f': float(focal_length),
+            #'pr': ptu.pan_res(),
+            #'tr': ptu.tilt_res(),
+            #'temp': ptu.ptu_temp(),
             'Camera': camera._camera_name,
             'below values obtained by stereosim IMU:': 'see below',
             '' : IMU_dict,
