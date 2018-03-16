@@ -17,6 +17,7 @@ import gphoto2 as gp
 from enum import IntEnum
 from flir_ptu.ptu import PTU
 import exifread
+import exiftool 
 #LOGGER = logging.getLogger(__name__)
 
 logger = logging.getLogger(__name__)
@@ -236,10 +237,7 @@ class StereoCamera():
         -------
         Array : [Left camera filename, Right camera filename]
         """
-        print('@@@starting capture image')
-        print('resetting imu input buffer')
         self.imu.reset_input_buffer()
-        print('imu readline')
         self.imu.readline()
         split = self.imu.readline().decode().strip().split(";")
         print('split length:', len(split))
@@ -247,7 +245,6 @@ class StereoCamera():
         data = {'Lat': split[0], 'Lon': split[1], 'Alt': split[2], 'HDOP': split[3], 'Date': split[4], 'Time': split[5], 'Fix': split[6], 'EulX': split[7], 'EulY': split[8], 'EulZ': split[9], 'Diag_System': split[10], 'Diag_Gyro': split[11], 'Diag_Acc': split[12], 'Diag_Mag': split[13]}
         with open("data_output", 'wb') as outfile: pickle.dump(data, outfile)
         outfile.close()
-        print('outfile closed')
         if not os.path.isdir(storage_path):
             raise Exception("Invalid path: {}".format(storage_path))
         logger.debug(os.path.join(storage_path, 'LEFT'))
@@ -275,7 +272,6 @@ class StereoCamera():
         print('filename: ' + filename)
         folderr = ''
         folderl = ''
-        timforloop = time.time()
         for cam, location in zip(self.cameras, camera_onboard_paths):
             folder = os.path.join(storage_path, cam._camera_name)
             if folder.startswith('RIGHT', 36, 41):
@@ -284,7 +280,6 @@ class StereoCamera():
             if folder.startswith('LEFT', 36, 40):
                 folderl = folder
                 filenamel = 'L_' + filename
-        print('naming for loop: ' + str(time.time() - timforloop) + ' seconds')
         timselfgetimage = time.time()
         getimageargs = [(self.cameras[0], camera_onboard_paths[0], folderl, filenamel), (self.cameras[1], camera_onboard_paths[1], folderr, filenamer)]
 
@@ -292,8 +287,6 @@ class StereoCamera():
         stored_file_paths = pool.starmap(self.get_image_from_camera, getimageargs)
         pool.close()
         pool.join()
-
-        #cpath = self.get_image_from_camera(cam, location, folder, filename)
         print('get image from camera time: ' + str(time.time()-timselfgetimage) + ' seconds')
         #stored_file_paths.append(cpath)
 
@@ -334,11 +327,10 @@ class StereoCamera():
         str
             The path of the captured image
         """
-        logger.debug("Transferring file")
-        timfileget = time.time()
+        #logger.debug("Transferring file")
+        timfileget = time.time() 
         cfile = camera.file_get(camera_file_path.folder, camera_file_path.name,
                                 gp.GP_FILE_TYPE_NORMAL, self.context)
-
         print('camera.file_get time: ' + str(time.time() - timfileget) + ' seconds')
         camera_file = ''
         if filename:
@@ -392,11 +384,16 @@ class StereoCamera():
         camera : camera_object
         file_path : str
         """
-        with open(file_path, 'rb') as f:
-            meta = exifread.process_file(f, details=False)
+        #instead of using exifread let's use exiftool
+        with exiftool.ExifTool() as et:
+            flmeta = et.get_tag('FocalLength', file_path)
+            print('focal length from metadata: ', flmeta)
+            #meta = et.get_metadata(file_path) 
 
-        focal_length = '{}'.format(meta['EXIF FocalLength'])
-
+        #focal_length = '{}'.format(meta['EXIF FocalLength'])
+        #focal_length = '{}'.format(meta['XMP:FocalLength'])
+        focal_length = '{}'.format(flmeta)
+        
         ptu = PTU("129.219.136.149", 4000)
         ptu.connect()
         if ptu.stream.is_connected:
