@@ -1,7 +1,6 @@
 from __future__ import print_function
 from multiprocessing.dummy import Pool as ThreadPool
 from functools import partial
-import time
 from time import sleep
 import math
 import pickle
@@ -258,18 +257,15 @@ class StereoCamera():
         camera_onboard_paths = []
         
         cameras_test = [self.cameras[0], self.cameras[1]]
-        timtriggerboth = time.time()
         pool = ThreadPool(4)
        
         camera_onboard_paths = pool.map(self.trigger_capture, cameras_test)
         
         pool.close()
-        print('total time for trigger capture on both cameras: ' + str(time.time() - timtriggerboth) + ' seconds.')
         pool.join()
         
         filenamer = filename
         filenamel = filename
-        print('filename: ' + filename)
         folderr = ''
         folderl = ''
         for cam, location in zip(self.cameras, camera_onboard_paths):
@@ -280,15 +276,12 @@ class StereoCamera():
             if folder.startswith('LEFT', 36, 40):
                 folderl = folder
                 filenamel = 'L_' + filename
-        timselfgetimage = time.time()
         getimageargs = [(self.cameras[0], camera_onboard_paths[0], folderl, filenamel), (self.cameras[1], camera_onboard_paths[1], folderr, filenamer)]
 
         pool = ThreadPool(4)
         stored_file_paths = pool.starmap(self.get_image_from_camera, getimageargs)
         pool.close()
         pool.join()
-        print('get image from camera time: ' + str(time.time()-timselfgetimage) + ' seconds')
-        #stored_file_paths.append(cpath)
 
         return stored_file_paths, data
 
@@ -305,9 +298,7 @@ class StereoCamera():
             The path of the captured image on the camera
         """
         logger.debug("Triggering image capture on {} camera".format(camera._camera_name))
-        timtrigcapture = time.time()
         file_path = camera.capture(gp.GP_CAPTURE_IMAGE, self.context)
-        print('camera.capture in trig: ' + str(time.time() - timtrigcapture) + ' seconds')
         logger.debug(
             "File path: {}/{}".format(file_path.folder, file_path.name))
         return file_path
@@ -327,20 +318,15 @@ class StereoCamera():
         str
             The path of the captured image
         """
-        #logger.debug("Transferring file")
-        timfileget = time.time() 
         cfile = camera.file_get(camera_file_path.folder, camera_file_path.name,
                                 gp.GP_FILE_TYPE_NORMAL, self.context)
-        print('camera.file_get time: ' + str(time.time() - timfileget) + ' seconds')
         camera_file = ''
         if filename:
             camera_file = os.path.join(storage_path, filename)
         else:
             camera_file = os.path.join(storage_path, camera_file_path.name)
         #logger.info("Storing file at {}".format(camera_file))
-        timsavecamfile = time.time()
         cfile.save(camera_file)
-        print('time it takes to save cam_file: '+ str(time.time() - timsavecamfile) + ' seconds')
         if filename != "focallength.jpg":
             self.create_label(camera, camera_file)
         return camera_file
@@ -384,10 +370,8 @@ class StereoCamera():
         camera : camera_object
         file_path : str
         """
-        #instead of using exifread let's use exiftool
         with exiftool.ExifTool() as et:
             flmeta = et.get_tag('FocalLength', file_path)
-            print('focal length from metadata: ', flmeta)
             #meta = et.get_metadata(file_path) 
 
         #focal_length = '{}'.format(meta['EXIF FocalLength'])

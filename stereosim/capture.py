@@ -2,7 +2,6 @@
 import sys
 import logging
 import numpy as np
-import time
 
 from flir_ptu.ptu import PTU
 from stereosim.stereosim import StereoCamera, CameraID
@@ -48,24 +47,14 @@ class CaptureSession(object):
 
     def capture(self):
         print('Capturing an image...')
-        timstart = time.time()
         file_path = self.session.get_folder_path()
         file_name = self.session.get_file_name()
         print('file_path: ', file_path)
-        print('imageformat: ', self.cam.get_config('imageformat', CameraID.RIGHT))
-        timstart = time.time()
-        #if(self.cam.get_config('imageformat', CameraID.RIGHT) == 'RAW2' and self.cam.get_config('imageformat', CameraID.LEFT) == 'RAW2'):
-            #file_name = file_name.replace("jpg", "cr2")
-            #print('filename: ', file_name)
         if(self.cam.get_config('imageformat', CameraID.RIGHT) == 'RAW' and self.cam.get_config('imageformat', CameraID.LEFT) == 'RAW'):
             file_name = file_name.replace("jpg","crw")
-            print('we in the get config if statement. this is file_name: ', file_name)
         elif(self.cam.get_config('imageformat', CameraID.RIGHT) == 'RAW' or self.cam.get_config('imageformat', CameraID.LEFT) == 'RAW'):
             print('image format of one of the cameras is not the same as the other please readjust')
-        print("we about to cal stereosim stuff. but here's the get_config time: " + str(time.time()-timstart))
         camera_file_paths = self.cam.capture_image(file_path, file_name)
-        print('Image Captured.')
-        print('Total capture time' + str(time.time() - timstart) + ' seconds')
         self.session.image_count(inc=True)
 
         return camera_file_paths
