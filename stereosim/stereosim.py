@@ -239,7 +239,6 @@ class StereoCamera():
         self.imu.reset_input_buffer()
         self.imu.readline()
         split = self.imu.readline().decode().strip().split(";")
-        print('split length:', len(split))
         print(split) 
         data = {'Lat': split[0], 'Lon': split[1], 'Alt': split[2], 'HDOP': split[3], 'Date': split[4], 'Time': split[5], 'Fix': split[6], 'EulX': split[7], 'EulY': split[8], 'EulZ': split[9], 'Diag_System': split[10], 'Diag_Gyro': split[11], 'Diag_Acc': split[12], 'Diag_Mag': split[13]}
         with open("data_output", 'wb') as outfile: pickle.dump(data, outfile)
@@ -266,6 +265,7 @@ class StereoCamera():
         
         filenamer = filename
         filenamel = filename
+        print('filename: ' + filename)
         folderr = ''
         folderl = ''
         for cam, location in zip(self.cameras, camera_onboard_paths):
@@ -337,8 +337,6 @@ class StereoCamera():
         pitch = float(eD[1])
         roll = float(eD[2])
 
-        print(yaw)
-        print(type(yaw))
         cy = math.cos(yaw * 0.5)
         sy = math.sin(yaw * 0.5)
         cr = math.cos(roll * 0.5)
@@ -396,7 +394,6 @@ class StereoCamera():
             el = None
 
         IMU_quaternion, IMU_dict = self.getIMU()
-
         yaml_path = os.path.splitext(file_path)[0]
         contents = {
             'AZIMUTH': az,

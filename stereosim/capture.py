@@ -2,6 +2,7 @@
 import sys
 import logging
 import numpy as np
+import time
 
 from flir_ptu.ptu import PTU
 from stereosim.stereosim import StereoCamera, CameraID
@@ -47,6 +48,7 @@ class CaptureSession(object):
 
     def capture(self):
         print('Capturing an image...')
+        timstart = time.time()
         file_path = self.session.get_folder_path()
         file_name = self.session.get_file_name()
         print('file_path: ', file_path)
@@ -56,6 +58,7 @@ class CaptureSession(object):
             print('image format of one of the cameras is not the same as the other please readjust')
         camera_file_paths = self.cam.capture_image(file_path, file_name)
         self.session.image_count(inc=True)
+        print('Total capture time ' + str(time.time() - timstart) + ' seconds.')
 
         return camera_file_paths
 
