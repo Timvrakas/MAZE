@@ -18,7 +18,8 @@ requirements = [
     'pyyaml',
     'gphoto2',
     'exifread',
-    'flir_ptu'
+    'flir_ptu',
+    'pyserial'
 ]
 
 setup(
