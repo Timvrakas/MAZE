@@ -237,6 +237,18 @@ class StereoCamera():
             self.set_config("imageformat", old_image_setting, index)
         return stats_array
 
+    def record_IMU_data(self):
+        """Records Data from the IMU Module and saves it to a file"""
+        self.imu.reset_input_buffer()
+        self.imu.readline()
+        IMU_string = self.imu.readline().decode().strip()
+        print(IMU_string)
+        IMU_data = json.loads(IMU_string)
+        with open("data_output", 'wb') as outfile: pickle.dump(IMU_data, outfile)
+        outfile.close()
+        return IMU_data
+
+
     def capture_image(self, storage_path, ptudict, filename=None):
         """ Capture images on both the cameras
         The files will stored as below
@@ -257,15 +269,11 @@ class StereoCamera():
         -------
         Array : [Left camera filename, Right camera filename]
         """
+
+        IMU_data = self.record_IMU_data()
+
         self.ptudict = ptudict
 
-        self.imu.reset_input_buffer()
-        self.imu.readline()
-        split = self.imu.readline().decode().strip().split(";")
-        print(split) 
-        data = {'Lat': split[0], 'Lon': split[1], 'Alt': split[2], 'HDOP': split[3], 'Date': split[4], 'Time': split[5], 'Fix': split[6], 'EulX': split[7], 'EulY': split[8], 'EulZ': split[9], 'Diag_System': split[10], 'Diag_Gyro': split[11], 'Diag_Acc': split[12], 'Diag_Mag': split[13]}
-        with open("data_output", 'wb') as outfile: pickle.dump(data, outfile)
-        outfile.close()
         if not os.path.isdir(storage_path):
             raise Exception("Invalid path: {}".format(storage_path))
         logger.debug(os.path.join(storage_path, 'LEFT'))
@@ -306,7 +314,7 @@ class StereoCamera():
         pool.close()
         pool.join()
 
-        return stored_file_paths, data
+        return stored_file_paths, IMU_data
 
     def trigger_capture(self, camera):
         """ Trigger image capture
