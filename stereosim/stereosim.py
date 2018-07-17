@@ -237,15 +237,14 @@ class StereoCamera():
             self.set_config("imageformat", old_image_setting, index)
         return stats_array
 
-    def record_IMU_data(self):
+    def capture_IMU_data(self):
         """Records Data from the IMU Module and saves it to a file"""
+        """TODO: Detect IMU connection status, mark if missing""""
         self.imu.reset_input_buffer()
         self.imu.readline()
         IMU_string = self.imu.readline().decode().strip()
         print(IMU_string)
         IMU_data = json.loads(IMU_string)
-        with open("data_output", 'wb') as outfile: pickle.dump(IMU_data, outfile)
-        outfile.close()
         return IMU_data
 
 
@@ -270,8 +269,7 @@ class StereoCamera():
         Array : [Left camera filename, Right camera filename]
         """
 
-        IMU_data = self.record_IMU_data()
-
+        
         self.ptudict = ptudict
 
         if not os.path.isdir(storage_path):
@@ -288,7 +286,9 @@ class StereoCamera():
         
         cameras_test = [self.cameras[0], self.cameras[1]]
         pool = ThreadPool(4)
-       
+
+        IMU_data = self.capture_IMU_data() #Sample IMU Data
+
         camera_onboard_paths = pool.map(self.trigger_capture, cameras_test)
         
         pool.close()
@@ -307,7 +307,7 @@ class StereoCamera():
             if folder.startswith('LEFT', 36, 40):
                 folderl = folder
                 filenamel = 'L_' + filename
-        getimageargs = [(self.cameras[0], camera_onboard_paths[0], folderl, filenamel), (self.cameras[1], camera_onboard_paths[1], folderr, filenamer)]
+        getimageargs = [(self.cameras[0], camera_onboard_paths[0], folderl, filenamel, IMU_data), (self.cameras[1], camera_onboard_paths[1], folderr, filenamer, IMU_data)]
 
         pool = ThreadPool(4)
         stored_file_paths = pool.starmap(self.get_image_from_camera, getimageargs)
@@ -334,7 +334,7 @@ class StereoCamera():
             "File path: {}/{}".format(file_path.folder, file_path.name))
         return file_path
 
-    def get_image_from_camera(self, camera, camera_file_path, storage_path, filename=None):
+    def get_image_from_camera(self, camera, camera_file_path, storage_path, filename=None, IMU_data):
         """ Capture image on single camera
 
         Parameters
@@ -359,10 +359,10 @@ class StereoCamera():
         #logger.info("Storing file at {}".format(camera_file))
         cfile.save(camera_file)
         if filename != "specs.jpg":
-            self.create_label(camera, camera_file)
+            self.create_label(camera, camera_file, IMU_data) #TODO: This should really be called from capture_image, not from here.
         return camera_file
 
-    def toQuaternion(self, eD):
+    ''''def toQuaternion(self, eD):
 
         yaw = float(eD[0])
         pitch = float(eD[1])
@@ -389,9 +389,9 @@ class StereoCamera():
         EulerData = [dic['EulX'], dic['EulY'], dic['EulZ']]
         result = self.toQuaternion(EulerData)
 
-        return result, dic
+        return result, dic'''
     
-    def create_label(self, camera, file_path):
+    def create_label(self, camera, file_path,IMU_data):
         """ Create label for captured image.
 
         Parameters
@@ -412,7 +412,8 @@ class StereoCamera():
         az = self.ptudict['az']
         el = self.ptudict['el']
         
-        IMU_quaternion, IMU_dict = self.getIMU()
+        IMU_quaternion = IMU_data["quat"]
+
         yaml_path = os.path.splitext(file_path)[0]
         contents = {
             'AZIMUTH': az,
@@ -425,7 +426,7 @@ class StereoCamera():
             #'temp': ptu.ptu_temp(),
             'Camera': camera._camera_name,
             'below values obtained by stereosim IMU:': 'see below',
-            '' : IMU_dict,
+            '' : IMU_data,
             'IMU_quaternion' : IMU_quaternion
         }
         with open('{}.lbl'.format(yaml_path), 'w') as lblfile:
