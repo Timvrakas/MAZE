@@ -16,7 +16,7 @@ with open('HISTORY.rst') as history_file:
 
 requirements = [
     'pyyaml',
-    'gphoto2',
+    'gphoto2',# To have a virtualenv on windows (for linting etc.), you must supress gphoto2 building
     'exifread',
     'flir_ptu',
     'pyserial',
