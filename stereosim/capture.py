@@ -103,7 +103,7 @@ class CaptureSession(object):
             print('{} data points provided, an even number of az and el data'
                   'points is required please try again.'.format(length))
         arr = np.asarray(lst)
-        arr = arr.reshape((len(lst) / 2, 2))
+        arr = arr.reshape((-1, 2))
 
         return arr
 
