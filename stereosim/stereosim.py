@@ -239,7 +239,7 @@ class StereoCamera():
 
     def capture_IMU_data(self):
         """Records Data from the IMU Module and saves it to a file"""
-        """TODO: Detect IMU connection status, mark if missing""""
+        """TODO: Detect IMU connection status, mark if missing"""
         self.imu.reset_input_buffer()
         self.imu.readline()
         IMU_string = self.imu.readline().decode().strip()
@@ -334,7 +334,7 @@ class StereoCamera():
             "File path: {}/{}".format(file_path.folder, file_path.name))
         return file_path
 
-    def get_image_from_camera(self, camera, camera_file_path, storage_path, filename=None, IMU_data):
+    def get_image_from_camera(self, camera, camera_file_path, storage_path, filename=None, IMU_data=None):
         """ Capture image on single camera
 
         Parameters
