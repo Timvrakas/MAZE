@@ -19,7 +19,8 @@ requirements = [
     'gphoto2',
     'exifread',
     'flir_ptu',
-    'pyserial'
+    'pyserial',
+    'ocrd-pyexiftool'
 ]
 
 setup(
