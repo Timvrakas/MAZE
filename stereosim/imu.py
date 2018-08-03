@@ -44,7 +44,10 @@ class IMU():
                 # Guaranteed to have at least 2 entries
                 lines = buffer_string.split('\n')
                 IMU_string = lines[-2].strip()
-                self.last_data = json.loads(IMU_string)
+                try:
+                    self.last_data = json.loads(IMU_string)
+                except Exception:
+                    print("IMU Parse Error")  # TODO: Logging
                 buffer_string = lines[-1]  # keeps buffer small
 
     def getData(self):  # Fetch latest data
