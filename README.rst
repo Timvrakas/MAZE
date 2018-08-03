@@ -72,6 +72,14 @@ the calibration model::
 
   $ python save_stereosim_model.py /path/to/captured/checkerboard/images/
 
+Network Configuration
+---------------------
+There are several hardcoded IP addresses used to connect to components for feild operation.
+The Raspberry Pi is used as a wireless access point, hosting a wireless network on the subnet 10.5.0.1/24.
+Additionaliy, the Pi uses ethernet to operate the PTU, over a statialy assigned wired network on 10.5.1.1/24.
+The Pi is 10.5.1.1, and the PTU is 10.5.1.2. On top of this, the Pi runs a DHCP client over ethernet (to recvive internet while testing), 
+and a DHCP Server over the WiFi connection, providing WiFi clients with internet access.
+
 References
 ----------
 **(1) What is PDS (Planetary Data Systems) ?** (https://pds.nasa.gov/about/about.shtml)

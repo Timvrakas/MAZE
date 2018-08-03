@@ -242,7 +242,7 @@ class CaptureSession(object):
 
 def main():
     cam = StereoCamera()
-    ptu = PTU("129.219.136.149", 4000)
+    ptu = PTU("10.5.1.2", 4000)
 
     cam.detect_cameras() 
     ptu.connect()
