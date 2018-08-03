@@ -5,8 +5,6 @@ from time import sleep
 import math
 import pickle
 import os
-import json
-import serial
 import logging
 import io
 import sys
@@ -89,13 +87,7 @@ class StereoCamera():
                             str(abilities.model)
 
         failure = (self.cameras[CameraID.LEFT] is None) or (self.cameras[CameraID.RIGHT] is None)
-        imu_success = True
-        try:
-            print("Trying IMU")
-            self.imu = serial.Serial('/dev/ttyACM0', 115200)
-        except Exception:
-            imu_success = False
-        return failure, msg, imu_success
+        return failure, msg
 
     def get_summary(self):
         """ Prints the summary of the cameras as defined by gphoto2
@@ -237,18 +229,7 @@ class StereoCamera():
             self.set_config("imageformat", old_image_setting, index)
         return stats_array
 
-    def capture_IMU_data(self):
-        """Records Data from the IMU Module and saves it to a file"""
-        """TODO: Detect IMU connection status, mark if missing"""
-        self.imu.reset_input_buffer()
-        self.imu.readline()
-        IMU_string = self.imu.readline().decode().strip()
-        print(IMU_string)
-        IMU_data = json.loads(IMU_string)
-        return IMU_data
-
-
-    def capture_image(self, storage_path, ptudict, filename=None):
+    def capture_image(self, storage_path, ptudict, IMU_data, filename=None):
         """ Capture images on both the cameras
         The files will stored as below
             storage_path
@@ -287,8 +268,6 @@ class StereoCamera():
         cameras_test = [self.cameras[0], self.cameras[1]]
         pool = ThreadPool(4)
 
-        IMU_data = self.capture_IMU_data() #Sample IMU Data
-
         camera_onboard_paths = pool.map(self.trigger_capture, cameras_test)
         
         pool.close()
@@ -314,7 +293,7 @@ class StereoCamera():
         pool.close()
         pool.join()
 
-        return stored_file_paths, IMU_data
+        return stored_file_paths
 
     def trigger_capture(self, camera):
         """ Trigger image capture
@@ -361,35 +340,6 @@ class StereoCamera():
         if filename != "specs.jpg":
             self.create_label(camera, camera_file, IMU_data) #TODO: This should really be called from capture_image, not from here.
         return camera_file
-
-    ''''def toQuaternion(self, eD):
-
-        yaw = float(eD[0])
-        pitch = float(eD[1])
-        roll = float(eD[2])
-
-        cy = math.cos(yaw * 0.5)
-        sy = math.sin(yaw * 0.5)
-        cr = math.cos(roll * 0.5)
-        sr = math.sin(roll * 0.5)
-        cp = math.cos(pitch * 0.5)
-        sp = math.sin(pitch * 0.5)
-
-        w = cy * cr * cp + sy * sr * sp
-        x = cy * sr * cp - sy * cr * sp
-        y = cy * cr * sp + sy * sr * cp
-        z = sy * cr * cp - cy * sr * sp
-        q = [w, x, y, z]
-
-        return q
-
-    def getIMU(self):
-        fileObject = open("data_output", "rb")
-        dic = pickle.load(fileObject)
-        EulerData = [dic['EulX'], dic['EulY'], dic['EulZ']]
-        result = self.toQuaternion(EulerData)
-
-        return result, dic'''
     
     def create_label(self, camera, file_path,IMU_data):
         """ Create label for captured image.

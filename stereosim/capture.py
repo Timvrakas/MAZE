@@ -9,6 +9,7 @@ from subprocess import call
 from flir_ptu.ptu import PTU
 from stereosim.stereosim import StereoCamera, CameraID
 from stereosim.session import start_session
+from stereosim.imu import IMU
 
 
 logger = logging.getLogger()
@@ -20,9 +21,10 @@ logger.setLevel(logging.INFO)
 
 class CaptureSession(object):
 
-    def __init__(self, cam, ptu, session, ptudict):
+    def __init__(self, cam, ptu, imu, session, ptudict):
         self.cam = cam
         self.ptu = ptu
+        self.imu = imu
         self.session = session
         self.viewtoggle = False
         self.ptudict = ptudict
@@ -66,8 +68,9 @@ class CaptureSession(object):
         elif(self.cam.get_config('imageformat', CameraID.RIGHT) == 'RAW' or self.cam.get_config('imageformat', CameraID.LEFT) == 'RAW'):
             print('image format of one of the cameras is not the same as the other please readjust')
         
-        
-        camera_file_paths = self.cam.capture_image(file_path, self.ptudict, file_name)
+        imu_data = self.imu.getData()
+
+        camera_file_paths = self.cam.capture_image(file_path, self.ptudict, imu_data, file_name)
         self.session.image_count(inc=True)
         print('Total capture time ' + str(time.time() - timstart) + ' seconds.')
         if(self.viewtoggle):
@@ -219,6 +222,7 @@ class CaptureSession(object):
 
     def quit(self):
         self.cam.quit()
+        self.imu.disconnect()
         print('quit')
         sys.exit()
 
@@ -243,9 +247,11 @@ class CaptureSession(object):
 def main():
     cam = StereoCamera()
     ptu = PTU("10.5.1.2", 4000)
+    imu = IMU()
 
     cam.detect_cameras() 
     ptu.connect()
+    imu.connect()
 
     with start_session() as session:
         if ptu.stream.is_connected:
@@ -256,7 +262,7 @@ def main():
                     'el': ptu.tilt_angle()}
         else:
             print('Restart, Turn cameras on and off and unplug and replug IMU')
-        cap_ses = CaptureSession(cam, ptu, session, pdict)
+        cap_ses = CaptureSession(cam, ptu, imu, session, pdict)
         while True:
             command_input = input('> ')
             cap_ses.test_case(command_input)

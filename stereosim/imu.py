@@ -8,10 +8,11 @@ from threading import Event
 class IMU():
 
     def __init__(self):
-        self.last_data = None
+        self.last_data = dict()
         self.ser_port = serial.Serial(baudrate=115200)
         self.thread = None
         self.kill = Event()
+        self.is_connected = False
 
     def connect(self):  # connect to IMU Unit
         ports = list_ports.comports()
@@ -25,10 +26,11 @@ class IMU():
             self.thread.start()
         except Exception:
             print("IMU Connection Failed!")  # TODO: Logging
-            return False
+            self.is_connected = False
         else:
             print("IMU Connected Sucessfully!")  # TODO: Logging
-            return True
+            self.is_connected = True
+        return self.is_connected
 
     def rx_thread(self):  # threaded process that handles serial input
         buffer_string = ''
