@@ -37,9 +37,11 @@ def mosaic(camera, ptu, filepath, azimuth=0, elevation=0):
         ptu.tilt_angle(curr_el)
 
         filename = str(file_name_count).zfill(5)
-        logger.info('Current Position:- Az: {}, El: {}, Current File:- {}'.format(curr_az, curr_el, filename))
+        logger.info(
+            'Current Position:- Az: {}, El: {}, Current File:- {}'.format(curr_az, curr_el, filename))
 
-        camera_files = camera.capture_image(filepath, '{}.JPG'.format(filename))
+        camera_files = camera.capture_image(
+            filepath, '{}.JPG'.format(filename))
         logger.info(camera_files)
         pp = ptu.pan()
         tp = ptu.tilt()

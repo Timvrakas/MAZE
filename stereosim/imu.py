@@ -19,10 +19,12 @@ class IMU():
         imu_port_list = list(
             filter(lambda x: x.vid == 9025 and x.pid == 32823, ports))
         self.ser_port.port = imu_port_list[0][0]
-        print('Found {:d} IMU units, using: {:s}'.format(len(imu_port_list), self.ser_port.port))  # TODO: Logging
+        print('Found {:d} IMU units, using: {:s}'.format(
+            len(imu_port_list), self.ser_port.port))  # TODO: Logging
         try:
             self.ser_port.open()
-            self.thread = Thread(target=self.rx_thread)  # threaded serial listener
+            # threaded serial listener
+            self.thread = Thread(target=self.rx_thread)
             self.thread.start()
         except Exception:
             print("IMU Connection Failed!")  # TODO: Logging
@@ -34,7 +36,7 @@ class IMU():
 
     def rx_thread(self):  # threaded process that handles serial input
         buffer_string = ''
-        self.ser_port.readline() # clear incomplete line in buffer
+        self.ser_port.readline()  # clear incomplete line in buffer
         while not self.kill.is_set():
             buffer_string = buffer_string + \
                 self.ser_port.read(self.ser_port.inWaiting()).decode()

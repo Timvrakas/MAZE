@@ -5,10 +5,12 @@ import pytest
 import time
 from stereosim import imu
 
+
 def test_imu_connect():
     imu_unit = imu.IMU()
     imu_unit.connect()
     imu_unit.disconnect()
+
 
 def test_imu_data():
     imu_unit = imu.IMU()

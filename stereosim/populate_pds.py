@@ -77,7 +77,7 @@ class PDSGenerator(PDS3Image):
         #self.label = self._add_group('PTU_AXES_HEIGHTS')
         self.label = self._add_group('ROVER_FRAME')
         self.label = self._add_group('SITE_FRAME')
-        self.label['IMAGE']['IMAGE_CREATION_TIME'] =  pds_date
+        self.label['IMAGE']['IMAGE_CREATION_TIME'] = pds_date
         return self.label
 
     def _add_group(self, group_name):
@@ -93,13 +93,15 @@ class PDSGenerator(PDS3Image):
         --------
         label: PVLModule
             Returns label after adding PVLGroup in it.
-        """  
+        """
         if group_name == 'PTU_ARTICULATION_STATE':
             self.label['BEGIN_GROUP'] = 'PTU_ARTICULATION_STATE'
             self.label['ARTICULATION_DEVICE_ID'] = "PTU"
             self.label['ARTICULATION_DEVICE_NAME'] = "FLIR Pan-Tilt Unit"
-            self.label['ARTICULATION_DEVICE_ANGLE'] = [round(self.yaml_data['AZIMUTH']), round(self.yaml_data['ELEVATION'])]
-            self.label['ARTICULATION_DEVICE_ANGLE_NAME'] = ["AZIMUTH-MEASURED", "ELEVATION-MEASURED"]
+            self.label['ARTICULATION_DEVICE_ANGLE'] = [
+                round(self.yaml_data['AZIMUTH']), round(self.yaml_data['ELEVATION'])]
+            self.label['ARTICULATION_DEVICE_ANGLE_NAME'] = [
+                "AZIMUTH-MEASURED", "ELEVATION-MEASURED"]
             #self.label['PP'] = int(self.yaml_data['PP'])
             #self.label['TP'] = int(self.yaml_data['TP'])
             #self.label['AZIMUTH'] = self.yaml_data['AZIMUTH']
@@ -112,9 +114,10 @@ class PDSGenerator(PDS3Image):
             self.label['MODEL_TYPE'] = 'CAHVOR'
             self.label['MODEL_COMPONENT_ID'] = ["C", "A", "H", "V", "O", "R"]
             self.label['MODEL_COMPONENT_NAME'] = ["CENTER", "AXIS",
-                                                      "HORIZONTAL", "VERTICAL",
-                                                      "OPTICAL_AXIS", "DISTORTION_COEFFICIENTS"]
-            self.label['MODEL_COMPONENT_UNIT'] = ["METER", "N/A", "PIXEL", "PIXEL", "N/A", "N/A"]
+                                                  "HORIZONTAL", "VERTICAL",
+                                                  "OPTICAL_AXIS", "DISTORTION_COEFFICIENTS"]
+            self.label['MODEL_COMPONENT_UNIT'] = [
+                "METER", "N/A", "PIXEL", "PIXEL", "N/A", "N/A"]
             cahv = CAHVmodel.compute(self.yaml_data['Camera'])
 
             C = [0, 0, 0]
@@ -146,10 +149,11 @@ class PDSGenerator(PDS3Image):
             self.label['MODEL_TYPE'] = 'CAHVOR'
             self.label['MODEL_COMPONENT_ID'] = ["C", "A", "H", "V", "O", "R"]
             self.label['MODEL_COMPONENT_NAME'] = ["CENTER", "AXIS",
-                                                      "HORIZONTAL", "VERTICAL",
-                                                      "OPTICAL_AXIS", "DISTORTION_COEFFICIENTS"]
-            self.label['MODEL_COMPONENT_UNIT'] = ["METER", "N/A", "PIXEL", "PIXEL", "N/A", "N/A"]
-            
+                                                  "HORIZONTAL", "VERTICAL",
+                                                  "OPTICAL_AXIS", "DISTORTION_COEFFICIENTS"]
+            self.label['MODEL_COMPONENT_UNIT'] = [
+                "METER", "N/A", "PIXEL", "PIXEL", "N/A", "N/A"]
+
             cahv = CAHVmodel.compute(self.yaml_data['Camera'])
 
             C = [0, 0.252, 0]
@@ -179,20 +183,22 @@ class PDSGenerator(PDS3Image):
         elif group_name == 'COLLINEAR_CAMERA_MODEL_LEFT':
             self.label['BEGIN_GROUP'] = 'GEOMETRIC_CAMERA_MODEL'
             self.label['MODEL_TYPE'] = 'COLLINEAR'
-            self.label['MODEL_COMPONENT_ID'] = ["C", "F", "f", "PxS", "P", "ANG", "ROT_MAT", "k"]
-            self.label['MODEL_COMPONENT_NAME'] = ["CENTER", "FOCAL_LENGTH", "fx/fy","PIXEL_SIZE",
+            self.label['MODEL_COMPONENT_ID'] = [
+                "C", "F", "f", "PxS", "P", "ANG", "ROT_MAT", "k"]
+            self.label['MODEL_COMPONENT_NAME'] = ["CENTER", "FOCAL_LENGTH", "fx/fy", "PIXEL_SIZE",
                                                   "PRINCIPAL", "ROT_ANG[OMEGA,PHI,KAPPA]", "ROTATION_MATRIX", "DISTORTION_COEFFICIENTS"]
 
-            self.label['MODEL_COMPONENT_UNIT'] = ["METER","MILLIETER","PIXEL","MILLIMETER","MILLIMETER","DEGREE","RADIANS","N/A"]
+            self.label['MODEL_COMPONENT_UNIT'] = ["METER", "MILLIETER",
+                                                  "PIXEL", "MILLIMETER", "MILLIMETER", "DEGREE", "RADIANS", "N/A"]
             C = [0, 0, 0]
             F = 28.939824
             f = [3910.787050, 3910.787050]
             PxS = [0.0074, 0.0074]
             P = [-0.155615, -0.147434]
             ANG = [0, -1.25, 0]
-            ROT_MAT = [[0.999762, 0, 0.021815],[0, -1.0, 0],[0.021815, 0, -0.999762]]
+            ROT_MAT = [[0.999762, 0, 0.021815], [
+                0, -1.0, 0], [0.021815, 0, -0.999762]]
             k = [0.000201221865, -0.000000179738162, 0.000000000291226599]
-
 
             self.label['MODEL_COMPONENT_1'] = C
             self.label['MODEL_COMPONENT_2'] = F
@@ -202,23 +208,26 @@ class PDSGenerator(PDS3Image):
             self.label['MODEL_COMPONENT_6'] = ANG
             self.label['MODEL_COMPONENT_7'] = ROT_MAT
             self.label['MODEL_COMPONENT_8'] = k
-            self.label['END_GROUP'] = 'GEOMETRIC_CAMERA_MODEL'  
+            self.label['END_GROUP'] = 'GEOMETRIC_CAMERA_MODEL'
 
         elif group_name == 'COLLINEAR_CAMERA_MODEL_RIGHT':
             self.label['BEGIN_GROUP'] = 'GEOMETRIC_CAMERA_MODEL'
             self.label['MODEL_TYPE'] = 'COLLINEAR'
-            self.label['MODEL_COMPONENT_ID'] = ["C", "F", "f", "PxS", "P", "ANG", "ROT_MAT", "k"]
+            self.label['MODEL_COMPONENT_ID'] = [
+                "C", "F", "f", "PxS", "P", "ANG", "ROT_MAT", "k"]
             self.label['MODEL_COMPONENT_NAME'] = ["CENTER", "FOCAL_LENGTH", "fx/fy", "PIXEL_SIZE",
-                                                  "PRINCIPAL", "ROT_ANG[OMEGA,PHI,KAPPA]","ROTATION_MATRIX", "DISTORTION_COEFFICIENTS"]
+                                                  "PRINCIPAL", "ROT_ANG[OMEGA,PHI,KAPPA]", "ROTATION_MATRIX", "DISTORTION_COEFFICIENTS"]
 
-            self.label['MODEL_COMPONENT_UNIT'] = ["METER","MILLIMETER","PIXEL","MILLIMETER","MILLIMETER","DEGREE","RADIANS","N/A"]
+            self.label['MODEL_COMPONENT_UNIT'] = ["METER", "MILLIMETER",
+                                                  "PIXEL", "MILLIMETER", "MILLIMETER", "DEGREE", "RADIANS", "N/A"]
             C = [0, 0.252, 0]
             F = 28.669273
             f = [3874.226066, 3874.226066]
             PxS = [0.0074, 0.0074]
             P = [-0.043868, -0.136980]
             ANG = [0, 1.25, 0]
-            ROT_MAT = [[0.999762, 0, -0.021815],[0, -1, 0],[-0.021815, 0, -0.999762]]
+            ROT_MAT = [[0.999762, 0, -0.021815],
+                       [0, -1, 0], [-0.021815, 0, -0.999762]]
             k = [0.000199562771, -0.0000000467599006, -0.000000000439101069]
 
             self.label['MODEL_COMPONENT_1'] = C
@@ -295,11 +304,14 @@ class PDSGenerator(PDS3Image):
         # This one is pointing of CAMERAS wrt rover frame (TRIPOD).
         elif group_name == 'ROVER_FRAME':
             self.label['BEGIN_GROUP'] = 'ROVER_DERIVED_GEOMETRY_PARMS'
-            self.label['INSTRUMENT_AZIMUTH'] = '{} <deg>'.format(round(self.yaml_data['AZIMUTH']))
-            self.label['INSTRUMENT_ELEVATION'] = '{} <deg>'.format(round(self.yaml_data['ELEVATION']))
+            self.label['INSTRUMENT_AZIMUTH'] = '{} <deg>'.format(
+                round(self.yaml_data['AZIMUTH']))
+            self.label['INSTRUMENT_ELEVATION'] = '{} <deg>'.format(
+                round(self.yaml_data['ELEVATION']))
             self.label['POSITIVE_AZIMUTH_DIRECTION'] = 'CLOCKWISE'
             self.label['ORIGIN_ANGULAR_OFFSET_UNIT'] = 'DEGREES'
-            self.label['REFERENCE_COORD_SYSTEM_INDEX'] = [1,0,0,0,0,0,1,0,0,0]
+            self.label['REFERENCE_COORD_SYSTEM_INDEX'] = [
+                1, 0, 0, 0, 0, 0, 1, 0, 0, 0]
             self.label['REFERENCE_COORD_SYSTEM_NAME'] = "ROVER_NAV_FRAME"
             self.label['END_GROUP'] = 'ROVER_DERIVED_GEOMETRY_PARMS'
 
@@ -353,9 +365,9 @@ class PDSGenerator(PDS3Image):
             ('LABEL_RECORDS', 1),
             ('DATA_SET_ID', 'UNK'),
             ('PRODUCT_ID', 'UNK'),
-            ('INSTRUMENT_HOST_NAME','MARS 2020'),
+            ('INSTRUMENT_HOST_NAME', 'MARS 2020'),
             ('INSTRUMENT_NAME', 'STEREOSIM'),
-            ('TARGET_NAME','MARS'),
+            ('TARGET_NAME', 'MARS'),
             ('START_TIME', 'UNK'),
             ('STOP_TIME', 'UNK'),
             ('SPACECRAFT_CLOCK_START_COUNT', 'UNK'),
@@ -364,14 +376,14 @@ class PDSGenerator(PDS3Image):
             ('^IMAGE', 1),
             ('IMAGE',
                 pvl.PVLModule([('BANDS', bands),
-                 ('BAND_STORAGE_TYPE', 'BAND_SEQUENTIAL'),
-                 ('FIRST_LINE', 1),
-                 ('FIRST_LINE_SAMPLE', 1),
-                 ('LINES', lines),
-                 ('LINE_SAMPLES', line_samples),
-                 ('SAMPLE_BITS', array.itemsize * 8),
-                 ('SAMPLE_TYPE', 'MSB_INTEGER')])
-            )])
+                               ('BAND_STORAGE_TYPE', 'BAND_SEQUENTIAL'),
+                               ('FIRST_LINE', 1),
+                               ('FIRST_LINE_SAMPLE', 1),
+                               ('LINES', lines),
+                               ('LINE_SAMPLES', line_samples),
+                               ('SAMPLE_BITS', array.itemsize * 8),
+                               ('SAMPLE_TYPE', 'MSB_INTEGER')])
+             )])
         return self._update_label(label_module, array)
 
     def _update_label(self, label, array):
@@ -405,13 +417,12 @@ class PDSGenerator(PDS3Image):
 
         return label
 
-
     def _convert_date(self, filepath):
         """
         Access the image acquisition time from intial image
         and convert to PDS format for storage in PDS header.
         Also collect focal length from exif header.
-        
+
         As of this writing:
         EXIF data format: 2017:02:21 12:36:11
         PDS date format:  2017-02-21T12:36:11.sssZ
@@ -450,14 +461,14 @@ class PDSGenerator(PDS3Image):
         Redefine _save() used in PDS3Image() so it does not overwrite the comment
         lines we add in with PDS3LabelEncoder()
         """
-##        if overwrite:
+# if overwrite:
 ##            file_to_write = self.filename
-##        elif os.path.isfile(file_to_write):
-##            msg = 'File ' + file_to_write + ' already exists !\n' + \
+# elif os.path.isfile(file_to_write):
+# msg = 'File ' + file_to_write + ' already exists !\n' + \
 ##                  'Call save() with "overwrite = True" to overwrite the file.'
 ##            raise IOError(msg)
 
-##        with open(file_to_write, 'a+b') as stream:
+# with open(file_to_write, 'a+b') as stream:
         encoder = PDS3LabelEncoder
         serial_label = pvl.dumps(self.label, cls=encoder)
         label_sz = len(serial_label)
@@ -467,7 +478,8 @@ class PDSGenerator(PDS3Image):
         if self._sample_bytes != self.label['IMAGE']['SAMPLE_BITS'] * 8:
             self.label['IMAGE']['SAMPLE_BITS'] = self.data.itemsize * 8
 
-        sample_type_to_save = self.DTYPES[self._sample_type[0] + self.dtype.kind]
+        sample_type_to_save = self.DTYPES[self._sample_type[0] +
+                                          self.dtype.kind]
         self.label['IMAGE']['SAMPLE_TYPE'] = sample_type_to_save
 
         if len(self.data.shape) == 3:
@@ -493,6 +505,7 @@ class PDSGenerator(PDS3Image):
         else:
             self.data.tofile(stream, format='%' + self.dtype.kind)
         stream.close()
+
 
 class PDS3LabelEncoder(pvl.PVLEncoder):
     """
@@ -552,7 +565,7 @@ class PDS3LabelEncoder(pvl.PVLEncoder):
         stream.write(self.assignment)
         stream.write(value)
         stream.write(self.newline)
- 
+
 
 def main():
     parser = argparse.ArgumentParser()

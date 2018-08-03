@@ -14,7 +14,7 @@ import gphoto2 as gp
 from enum import IntEnum
 from flir_ptu.ptu import PTU
 import exifread
-import exiftool 
+import exiftool
 #LOGGER = logging.getLogger(__name__)
 
 logger = logging.getLogger(__name__)
@@ -78,15 +78,16 @@ class StereoCamera():
                     camera._camera_id = CameraID.LEFT
                     self.cameras[CameraID.LEFT] = camera
                     msg[CameraID.LEFT] = True, "Connected: " + \
-                            str(abilities.model)
+                        str(abilities.model)
                 elif ownername == self.RIGHTNAME:
                     camera._camera_name = self.RIGHTNAME
                     camera._camera_id = CameraID.RIGHT
                     self.cameras[CameraID.RIGHT] = camera
                     msg[CameraID.RIGHT] = True, "Connected: " + \
-                            str(abilities.model)
+                        str(abilities.model)
 
-        failure = (self.cameras[CameraID.LEFT] is None) or (self.cameras[CameraID.RIGHT] is None)
+        failure = (self.cameras[CameraID.LEFT] is None) or (
+            self.cameras[CameraID.RIGHT] is None)
         return failure, msg
 
     def get_summary(self):
@@ -180,6 +181,7 @@ class StereoCamera():
                                                curr_dir, filename)
 
     '''
+
     def get_specs(self, name, test_file):
         with open(test_file, 'rb') as f:
             meta = exifread.process_file(f, details=False)
@@ -195,6 +197,7 @@ class StereoCamera():
         self.set_config("imageformat", old_image_setting, camera_id)
         return focal_len
     '''
+
     def get_stats(self, camera_id=None):
         stats = ['aperture', 'shutterspeed', 'iso', 'focallength']
         stats_array = []
@@ -213,10 +216,12 @@ class StereoCamera():
             test_file = os.path.join(curr_dir, filename)
             if os.path.isfile(test_file):
                 os.remove(test_file)
-            old_image_setting = self._get_config("imageformat", self.cameras[index])
+            old_image_setting = self._get_config(
+                "imageformat", self.cameras[index])
             self.set_config("imageformat", "Small Normal JPEG", index)
             onboard_path = self.trigger_capture(self.cameras[index])
-            test_file = self.get_image_from_camera(self.cameras[index], onboard_path, curr_dir, filename)
+            test_file = self.get_image_from_camera(
+                self.cameras[index], onboard_path, curr_dir, filename)
             for stat in stats:
                 if stat == 'focallength' or stat == 'shutterspeed':
                     value = self.get_specs(stat, test_file)
@@ -250,7 +255,6 @@ class StereoCamera():
         Array : [Left camera filename, Right camera filename]
         """
 
-        
         self.ptudict = ptudict
 
         if not os.path.isdir(storage_path):
@@ -264,15 +268,15 @@ class StereoCamera():
 
         stored_file_paths = []
         camera_onboard_paths = []
-        
+
         cameras_test = [self.cameras[0], self.cameras[1]]
         pool = ThreadPool(4)
 
         camera_onboard_paths = pool.map(self.trigger_capture, cameras_test)
-        
+
         pool.close()
         pool.join()
-        
+
         filenamer = filename
         filenamel = filename
         print('filename: ' + filename)
@@ -282,14 +286,16 @@ class StereoCamera():
             folder = os.path.join(storage_path, cam._camera_name)
             if folder.startswith('RIGHT', 36, 41):
                 folderr = folder
-                filenamer = 'R_'  +  filename
+                filenamer = 'R_' + filename
             if folder.startswith('LEFT', 36, 40):
                 folderl = folder
                 filenamel = 'L_' + filename
-        getimageargs = [(self.cameras[0], camera_onboard_paths[0], folderl, filenamel, IMU_data), (self.cameras[1], camera_onboard_paths[1], folderr, filenamer, IMU_data)]
+        getimageargs = [(self.cameras[0], camera_onboard_paths[0], folderl, filenamel, IMU_data),
+                        (self.cameras[1], camera_onboard_paths[1], folderr, filenamer, IMU_data)]
 
         pool = ThreadPool(4)
-        stored_file_paths = pool.starmap(self.get_image_from_camera, getimageargs)
+        stored_file_paths = pool.starmap(
+            self.get_image_from_camera, getimageargs)
         pool.close()
         pool.join()
 
@@ -307,7 +313,8 @@ class StereoCamera():
         str
             The path of the captured image on the camera
         """
-        logger.debug("Triggering image capture on {} camera".format(camera._camera_name))
+        logger.debug("Triggering image capture on {} camera".format(
+            camera._camera_name))
         file_path = camera.capture(gp.GP_CAPTURE_IMAGE, self.context)
         logger.debug(
             "File path: {}/{}".format(file_path.folder, file_path.name))
@@ -338,10 +345,11 @@ class StereoCamera():
         #logger.info("Storing file at {}".format(camera_file))
         cfile.save(camera_file)
         if filename != "specs.jpg":
-            self.create_label(camera, camera_file, IMU_data) #TODO: This should really be called from capture_image, not from here.
+            # TODO: This should really be called from capture_image, not from here.
+            self.create_label(camera, camera_file, IMU_data)
         return camera_file
-    
-    def create_label(self, camera, file_path,IMU_data):
+
+    def create_label(self, camera, file_path, IMU_data):
         """ Create label for captured image.
 
         Parameters
@@ -351,17 +359,17 @@ class StereoCamera():
         """
         with exiftool.ExifTool() as et:
             flmeta = et.get_tag('FocalLength', file_path)
-            #meta = et.get_metadata(file_path) 
+            #meta = et.get_metadata(file_path)
 
         #focal_length = '{}'.format(meta['EXIF FocalLength'])
         #focal_length = '{}'.format(meta['XMP:FocalLength'])
         focal_length = '{}'.format(flmeta)
-        
+
         pp = self.ptudict['pp']
         tp = self.ptudict['tp']
         az = self.ptudict['az']
         el = self.ptudict['el']
-        
+
         IMU_quaternion = IMU_data["quat"]
 
         yaml_path = os.path.splitext(file_path)[0]
@@ -371,13 +379,13 @@ class StereoCamera():
             'PP': float(pp),
             'TP': float(tp),
             'f': float(focal_length),
-            #'pr': ptu.pan_res(),
-            #'tr': ptu.tilt_res(),
-            #'temp': ptu.ptu_temp(),
+            # 'pr': ptu.pan_res(),
+            # 'tr': ptu.tilt_res(),
+            # 'temp': ptu.ptu_temp(),
             'Camera': camera._camera_name,
             'below values obtained by stereosim IMU:': 'see below',
-            '' : IMU_data,
-            'IMU_quaternion' : IMU_quaternion
+            '': IMU_data,
+            'IMU_quaternion': IMU_quaternion
         }
         with open('{}.lbl'.format(yaml_path), 'w') as lblfile:
             yaml.dump(contents, lblfile, default_flow_style=False)
@@ -398,7 +406,7 @@ def main():
     # s.get_summary()
     # logger.debug(s.get_config("ownername", CameraID.LEFT))
     # logger.debug(s.get_choices("imageformat", CameraID.LEFT))
-    #s.capture_image('/tmp/cam_files')
+    # s.capture_image('/tmp/cam_files')
     # f = s.get_focallength(CameraID.LEFT)
     # logger.debug("FocalLength: {}".format(f))
     s.get_stats()

@@ -16,7 +16,8 @@ with open('HISTORY.rst') as history_file:
 
 requirements = [
     'pyyaml',
-    'gphoto2',# To have a virtualenv on windows (for linting etc.), you must supress gphoto2 building
+    # To have a virtualenv on windows (for linting etc.), you must supress gphoto2 building
+    'gphoto2',
     'exifread',
     'flir_ptu',
     'pyserial',
@@ -38,7 +39,8 @@ setup(
                  'stereosim'},
     include_package_data=True,
     install_requires=requirements,
-    dependency_links=['git+https://github.com/nikhilkalige/flir.git#egg=flir_ptu'],
+    dependency_links=[
+        'git+https://github.com/nikhilkalige/flir.git#egg=flir_ptu'],
     license="BSD",
     zip_safe=False,
     keywords='stereosim',
@@ -53,7 +55,7 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "generate_pds = stereosim.generate_pds:main",           
+            "generate_pds = stereosim.generate_pds:main",
             "populate_pds = stereosim.populate_pds:main",
             "capture = stereosim.capture:main"
         ]

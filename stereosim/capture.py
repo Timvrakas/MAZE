@@ -19,6 +19,7 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 logger.setLevel(logging.INFO)
 
+
 class CaptureSession(object):
 
     def __init__(self, cam, ptu, imu, session, ptudict):
@@ -62,19 +63,20 @@ class CaptureSession(object):
         file_name = self.session.get_file_name()
         print('file_path: ', file_path)
 
-
         if(self.cam.get_config('imageformat', CameraID.RIGHT) == 'RAW' and self.cam.get_config('imageformat', CameraID.LEFT) == 'RAW'):
-            file_name = file_name.replace("jpg","crw")
+            file_name = file_name.replace("jpg", "crw")
         elif(self.cam.get_config('imageformat', CameraID.RIGHT) == 'RAW' or self.cam.get_config('imageformat', CameraID.LEFT) == 'RAW'):
-            print('image format of one of the cameras is not the same as the other please readjust')
-        
+            print(
+                'image format of one of the cameras is not the same as the other please readjust')
+
         imu_data = self.imu.getData()
 
-        camera_file_paths = self.cam.capture_image(file_path, self.ptudict, imu_data, file_name)
+        camera_file_paths = self.cam.capture_image(
+            file_path, self.ptudict, imu_data, file_name)
         self.session.image_count(inc=True)
         print('Total capture time ' + str(time.time() - timstart) + ' seconds.')
         if(self.viewtoggle):
-            self.preview(file_path,file_name)
+            self.preview(file_path, file_name)
 
         return camera_file_paths
 
@@ -166,14 +168,14 @@ class CaptureSession(object):
             file_name_count += 1
 
     def bunch(self):
-        #take  a bunch of pictures
+        # take  a bunch of pictures
         amount = input("\n Input the number of images you want to take ")
         num = int(amount)
         count = 1
         for x in range(1, num+1):
             camera_files = self.capture()
-            #logger.info(camera_files)
-            print(count,"/",num)
+            # logger.info(camera_files)
+            print(count, "/", num)
             count += 1
 
     def toggleview(self):
@@ -184,22 +186,23 @@ class CaptureSession(object):
 
     def preview(self, path, name):
         #img = Image.open(path+"/LEFT/L_"+name)
-        #img.show()
-        call(["eog", path+"/LEFT/L_"+name, "eog","-n", path+"/RIGHT/R_"+name])
+        # img.show()
+        call(["eog", path+"/LEFT/L_"+name, "eog", "-n", path+"/RIGHT/R_"+name])
 
     def view(self):
         # TODO: Add Preview Here
         file_path = self.session.get_folder_path()
         file_name = self.session.get_file_name()
-        a,b = file_name.split("_")
-        c,d = b.split(".")
+        a, b = file_name.split("_")
+        c, d = b.split(".")
         num = int(c)
         num = num - 1
         num = format(num, '04d')
         c = str(num)
         file_name = a+"_"+c+"."+d
-        call(["eog", file_path+"/LEFT/L_"+file_name,"&", "eog","-n", file_path+"/RIGHT/R_"+file_name])
-        #print('view')
+        call(["eog", file_path+"/LEFT/L_"+file_name, "&",
+              "eog", "-n", file_path+"/RIGHT/R_"+file_name])
+        # print('view')
 
     def create_session(self):
         no = self.session.new_session()
@@ -249,23 +252,24 @@ def main():
     ptu = PTU("10.5.1.2", 4000)
     imu = IMU()
 
-    cam.detect_cameras() 
+    cam.detect_cameras()
     ptu.connect()
     imu.connect()
 
     with start_session() as session:
         if ptu.stream.is_connected:
             pdict = {
-                    'pp': ptu.pan(),
-                    'tp': ptu.tilt(),
-                    'az': round(float(ptu.pan())*(92.5714/3600),5),
-                    'el': ptu.tilt_angle()}
+                'pp': ptu.pan(),
+                'tp': ptu.tilt(),
+                'az': round(float(ptu.pan())*(92.5714/3600), 5),
+                'el': ptu.tilt_angle()}
         else:
             print('Restart, Turn cameras on and off and unplug and replug IMU')
         cap_ses = CaptureSession(cam, ptu, imu, session, pdict)
         while True:
             command_input = input('> ')
             cap_ses.test_case(command_input)
+
 
 if __name__ == "__main__":
     main()

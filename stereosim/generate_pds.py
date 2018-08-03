@@ -63,7 +63,7 @@ class PDSGenerator(object):
         self.img.label = self._add_group('PTU_ARTICULATION_STATE')
         self.img.label = self._add_group('CAHVOR_CAMERA_MODEL')
         self.img.label = self._add_group('PHOTOGRAMMETRY_CAMERA_MODEL')
-        self.img.label['IMAGE']['IMAGE_CREATION_TIME'] =  pds_date
+        self.img.label['IMAGE']['IMAGE_CREATION_TIME'] = pds_date
         return self.img.label
 
     def _add_group(self, group_name):
@@ -104,7 +104,8 @@ class PDSGenerator(object):
         elif group_name == 'CAHVOR_CAMERA_MODEL':
             self.img.label['BEGIN_GROUP'] = 'CAHVOR_CAMERA_MODEL'
             self.img.label['MODEL_TYPE'] = 'CAHVOR'
-            self.img.label['MODEL_COMPONENT_ID'] = ["C", "A", "H", "V", "O", "R"]
+            self.img.label['MODEL_COMPONENT_ID'] = [
+                "C", "A", "H", "V", "O", "R"]
             self.img.label['MODEL_COMPONENT_NAME'] = ["CENTER", "AXIS",
                                                       "HORIZONTAL",
                                                       "VERTICAL", "OPTICAL_AXIS", "DISTORTION_COEFFICIENTS"]
@@ -121,7 +122,7 @@ class PDSGenerator(object):
             V = compute_coordinates(cahv.V, self.yaml_data['AZIMUTH'],
                                     self.yaml_data['ELEVATION'])
             O = compute_coordinates(cahv.O, self.yaml_data['AZIMUTH'],
-                        self.yaml_data['ELEVATION'])
+                                    self.yaml_data['ELEVATION'])
             R = cahv.R
             # print("Printing A vector")
             # print(cahv.A)
@@ -130,11 +131,11 @@ class PDSGenerator(object):
             print("Printing R vector")
             print(cahv.R)
 
-            #This is how I would print 'O' vector directly i.e. without changing the camera_orientation.py
+            # This is how I would print 'O' vector directly i.e. without changing the camera_orientation.py
             #my_test_object = CAHVmodel(self.yaml_data['Camera'])
             #my_test = my_test_object._cahv
             #print("Printing O vector")
-            #print(my_test['O'])
+            # print(my_test['O'])
 
             self.img.label['MODEL_COMPONENT_1'] = C.tolist()
             self.img.label['MODEL_COMPONENT_2'] = A.tolist()
@@ -149,7 +150,8 @@ class PDSGenerator(object):
         elif group_name == 'PHOTOGRAMMETRY_CAMERA_MODEL':
             self.img.label['BEGIN_GROUP'] = 'PHOTOGRAMMETRY_CAMERA_MODEL'
             self.img.label['MODEL_TYPE'] = 'PHOTOGRAMMETRY'
-            self.img.label['MODEL_COMPONENT_ID'] = ["C", "F", "PxS", "ImS", "P", "ANG"]
+            self.img.label['MODEL_COMPONENT_ID'] = [
+                "C", "F", "PxS", "ImS", "P", "ANG"]
             self.img.label['MODEL_COMPONENT_NAME'] = ["CENTER", "FOCAL_LENGTH",
                                                       "PIXEL_SIZE",
                                                       "IMAGE_SIZE",
@@ -159,7 +161,7 @@ class PDSGenerator(object):
             test_object = CAHVmodel(self.yaml_data['Camera'])
             test = test_object._cahv_input
             #print("Printing CENTER")
-            #print(test['center'])
+            # print(test['center'])
             C = test['center']
             F = test['f']
             PxS = test['pixelsize']
@@ -168,7 +170,7 @@ class PDSGenerator(object):
             ANG = None
             print("Printing Principal")
             print(ImS)
-            #ang = test[]
+            # ang = test[]
             self.img.label['MODEL_COMPONENT_1'] = C
             self.img.label['MODEL_COMPONENT_2'] = F
             self.img.label['MODEL_COMPONENT_3'] = PxS
@@ -185,6 +187,7 @@ class PDSGenerator(object):
         label = pvl.PVLModule(label_list)
         # print(label)
         return label
+
     def _convert_date(self, filepath):
         """
         Access the image acquisition time from intial image
@@ -220,6 +223,7 @@ class PDSGenerator(object):
         pds_date = yr + '-' + mo + '-' + d + 'T' + hr + ':' + m + ':' + s + '.sssZ'
         print('date pds format:', pds_date)
         return pds_date
+
 
 def main():
     parser = argparse.ArgumentParser()

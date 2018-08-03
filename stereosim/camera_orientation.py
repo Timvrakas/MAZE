@@ -63,13 +63,13 @@ class CAHVmodel(object):
     def O(self):
         """Returns Vertical Vector of CAHV model.
         """
-        return self._cahv['O']    
+        return self._cahv['O']
 
     @property
     def R(self):
         """Returns Vertical Vector of CAHV model.
         """
-        return self._cahv['R']    
+        return self._cahv['R']
 
     def _get_input(self, camera_eye):
         """

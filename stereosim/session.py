@@ -10,13 +10,15 @@ class Session:
 
     def __init__(self, folder_path):
         self.folder_path = folder_path
-        self.config_file_path = os.path.join(os.path.expanduser('~'), self.CONFIG_FILE)
+        self.config_file_path = os.path.join(
+            os.path.expanduser('~'), self.CONFIG_FILE)
 
         if not os.path.exists(self.folder_path):
             try:
                 os.makedirs(self.folder_path)
             except:
-                print("%s doesn't exist and couldn't be created." % self.folder_path)
+                print("%s doesn't exist and couldn't be created." %
+                      self.folder_path)
 
     def setup(self):
         self.config = configparser.ConfigParser()
@@ -59,7 +61,8 @@ class Session:
     def get_folder_path(self, new=False):
         if new:
             date = datetime.date.today().strftime("%d%m%Y")
-            folder_name = "session_{:03d}_{}".format(self.session_number(), date)
+            folder_name = "session_{:03d}_{}".format(
+                self.session_number(), date)
             self.config['DEFAULT']['CurrentSessionFolder'] = folder_name
         else:
             folder_name = self.config['DEFAULT']['CurrentSessionFolder']
