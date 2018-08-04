@@ -10,6 +10,7 @@ from flir_ptu.ptu import PTU
 from stereosim.stereo_camera import StereoCamera, CameraID
 from stereosim.session import start_session
 from stereosim.imu import IMU
+from stereosim.label import create_label
 
 
 logger = logging.getLogger()
@@ -58,21 +59,24 @@ class CaptureSession(object):
 
     def capture(self):
         print('Capturing an image...')
-        #timstart = time.time()
+        timstart = time.time()
         file_path = self.session.get_folder_path()
         file_name = self.session.get_file_name()
 
         imu_data = self.imu.getData()
 
-        camera_file_paths = self.cam.capture_image(
-            file_path, self.ptudict, imu_data, file_name)
+        saved_images = self.cam.capture_image(file_path, file_name)
+
+        for image_path, camera_name in saved_images: 
+            create_label(image_path, camera_name, self.ptudict, imu_data)
+
         self.session.image_count(inc=True)
-        #print('Total capture time ' + str(time.time() - timstart) + ' seconds.')
+        print('Total capture time ' + str(time.time() - timstart) + ' seconds.')
         if(self.viewtoggle):
             self.preview(file_path, file_name)
 
-        print(camera_file_paths)
-        return camera_file_paths
+        print(saved_images)
+        return saved_images
 
     def pos_arr(self, pos):
         """Make an (x,2) position array from a comma seperated list.

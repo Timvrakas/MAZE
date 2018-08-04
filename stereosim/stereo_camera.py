@@ -1,21 +1,10 @@
-from __future__ import print_function
 from multiprocessing.dummy import Pool as ThreadPool
-from functools import partial
-from time import sleep
-import math
-import pickle
 import os
 import logging
-import io
 import time
-import sys
-import math
-import yaml
 import gphoto2 as gp
 from enum import IntEnum
-from flir_ptu.ptu import PTU
 import exifread
-import exiftool
 #LOGGER = logging.getLogger(__name__)
 
 logger = logging.getLogger(__name__)
@@ -245,7 +234,7 @@ class StereoCamera():
             self.set_config("imageformat", old_image_setting, index)
         return stats_array
 
-    def capture_image(self, storage_path, ptu_dict, IMU_data, filename_base=None):
+    def capture_image(self, storage_path, filename_base=None):
         """ Capture images on both the cameras
         The files will stored as below
             storage_path
@@ -282,6 +271,7 @@ class StereoCamera():
             os.mkdir(storage_path)
 
         stored_file_paths = []
+        camera_names = []
 
         for cam in self.cameras:  # Generate filenames
             camera_dir = os.path.join(storage_path, cam._camera_name)
@@ -294,6 +284,7 @@ class StereoCamera():
             filename = cam._camera_name[0] + '_' + filename_base + file_ext
             file_path = os.path.join(camera_dir, filename)
             stored_file_paths.append(file_path)
+            camera_names.append(cam._camera_name)
 
         get_image_args = list(
             zip(*(self.cameras, camera_onboard_paths, stored_file_paths)))
@@ -304,23 +295,17 @@ class StereoCamera():
         print("Transfer Process took: {:f} seconds.".format(
             time.time() - timer))
 
-        '''if filename != "specs.jpg":
-            # TODO: This should really be called from capture_image, not from here.
-            self.create_label(camera, camera_file, IMU_data, ptu_dict)'''
-
-        return stored_file_paths
+        return zip(stored_file_paths,camera_names)
 
     def trigger_capture(self, camera):
         """ Trigger image capture
-
         Parameters
         ----------
         camera : camera_object
 
         Returns
         -------
-        str
-            The path of the captured image on the camera
+        str : The path of the captured image on the camera
         """
         logger.debug("Triggering image capture on {} camera".format(
             camera._camera_name))
@@ -331,7 +316,6 @@ class StereoCamera():
 
     def get_image_from_camera(self, camera, camera_file_path, storage_file_path):
         """ Capture image on single camera
-
         Parameters
         ----------
         camera : camera_object
@@ -346,72 +330,6 @@ class StereoCamera():
         cfile.save(storage_file_path)
         #print("save took: {:f} seconds.".format(time.time()-timer))
 
-    def create_label(self, camera, file_path, IMU_data, ptu_dict):
-        """ Create label for captured image.
-
-        Parameters
-        ----------
-        camera : camera_object
-        file_path : str
-        """
-        with exiftool.ExifTool() as et:
-            flmeta = et.get_tag('FocalLength', file_path)
-            #meta = et.get_metadata(file_path)
-
-        #focal_length = '{}'.format(meta['EXIF FocalLength'])
-        #focal_length = '{}'.format(meta['XMP:FocalLength'])
-        focal_length = '{}'.format(flmeta)
-
-        pp = ptu_dict['pp']
-        tp = ptu_dict['tp']
-        az = ptu_dict['az']
-        el = ptu_dict['el']
-
-        IMU_quaternion = IMU_data["quat"]
-
-        yaml_path = os.path.splitext(file_path)[0]
-        contents = {
-            'AZIMUTH': az,
-            'ELEVATION': el,
-            'PP': float(pp),
-            'TP': float(tp),
-            'f': float(focal_length),
-            # 'pr': ptu.pan_res(),
-            # 'tr': ptu.tilt_res(),
-            # 'temp': ptu.ptu_temp(),
-            'Camera': camera._camera_name,
-            'below values obtained by stereosim IMU:': 'see below',
-            '': IMU_data,
-            'IMU_quaternion': IMU_quaternion
-        }
-        with open('{}.lbl'.format(yaml_path), 'w') as lblfile:
-            yaml.dump(contents, lblfile, default_flow_style=False)
-
     def quit(self):
         for cam in self.cameras:
             cam.exit(self.context)
-
-
-'''
-def main():
-    logging.basicConfig(
-        format='%(levelname)s: %(name)s: %(message)s', level=logging.ERROR)
-    gp.check_result(gp.use_python_logging())
-    logger.setLevel(logging.DEBUG)
-
-    s = StereoCamera()
-    s.detect_cameras()
-    # s.get_summary()
-    # logger.debug(s.get_config("ownername", CameraID.LEFT))
-    # logger.debug(s.get_choices("imageformat", CameraID.LEFT))
-    # s.capture_image('/tmp/cam_files')
-    # f = s.get_focallength(CameraID.LEFT)
-    # logger.debug("FocalLength: {}".format(f))
-    s.get_stats()
-    s.get_stats(CameraID.LEFT)
-    s.quit()
-
-
-if __name__ == "__main__":
-    sys.exit(main())
-'''  # this is old...
