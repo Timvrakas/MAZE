@@ -3,7 +3,9 @@ import serial.tools.list_ports as list_ports
 import json
 from threading import Thread
 from threading import Event
+import logging
 
+logger = logging.getLogger(__name__)
 
 class IMU():
 
@@ -19,18 +21,18 @@ class IMU():
         imu_port_list = list(
             filter(lambda x: x.vid == 9025 and x.pid == 32823, ports))
         self.ser_port.port = imu_port_list[0][0]
-        print('Found {:d} IMU units, using: {:s}'.format(
-            len(imu_port_list), self.ser_port.port))  # TODO: Logging
+        logger.debug('Found {:d} IMU units, using: {:s}'.format(
+            len(imu_port_list), self.ser_port.port))
         try:
             self.ser_port.open()
             # threaded serial listener
             self.thread = Thread(target=self.rx_thread)
             self.thread.start()
         except Exception:
-            print("IMU Connection Failed!")  # TODO: Logging
+            logger.warning("IMU Connection Failed!")
             self.is_connected = False
         else:
-            print("IMU Connected Sucessfully!")  # TODO: Logging
+            logger.info("IMU Connected Sucessfully!")
             self.is_connected = True
         return self.is_connected
 
@@ -47,7 +49,7 @@ class IMU():
                 try:
                     self.last_data = json.loads(IMU_string)
                 except Exception:
-                    print("IMU Parse Error")  # TODO: Logging
+                    logger.warning("IMU Parse Error")
                 buffer_string = lines[-1]  # keeps buffer small
 
     def getData(self):  # Fetch latest data
@@ -57,4 +59,4 @@ class IMU():
         self.kill.set()
         self.thread.join()
         self.ser_port.close()
-        print("Serial Port Closed!")  # TODO: Logging
+        logger.info("IMU Disconnected")

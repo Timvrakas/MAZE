@@ -5,7 +5,6 @@ import time
 import gphoto2 as gp
 from enum import IntEnum
 import exifread
-#LOGGER = logging.getLogger(__name__)
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +60,7 @@ class StereoCamera():
                 ownername = self._get_config("ownername", camera)
                 abilities = gp.check_result(gp.gp_camera_get_abilities(camera))
             except gp.GPhoto2Error as error:
-                print(str(error))
+                logger.error(str(error))
             else:
                 if ownername == self.LEFTNAME:
                     camera._camera_name = self.LEFTNAME
@@ -261,8 +260,7 @@ class StereoCamera():
         camera_onboard_paths = self.pool.map(
             self.trigger_capture, self.cameras)
 
-        print("Capture Process took: {:f} seconds.".format(
-            time.time() - timer))
+        logger.debug("Capture Process took: {:f} seconds.".format(time.time() - timer))
 
         # PART TWO: transfer the images from the camera
         timer = time.time()
@@ -292,10 +290,9 @@ class StereoCamera():
         self.pool.starmap(
             self.get_image_from_camera, get_image_args)
 
-        print("Transfer Process took: {:f} seconds.".format(
-            time.time() - timer))
+        logger.debug("Transfer Process took: {:f} seconds.".format(time.time() - timer))
 
-        return zip(stored_file_paths,camera_names)
+        return list(zip(stored_file_paths,camera_names))
 
     def trigger_capture(self, camera):
         """ Trigger image capture
@@ -322,13 +319,9 @@ class StereoCamera():
         camera_file_path : path of the image on the camera
         storage_file_path : file location to save
         """
-        #timer = time.time()
         cfile = camera.file_get(camera_file_path.folder, camera_file_path.name,
                                 gp.GP_FILE_TYPE_NORMAL, self.context)
-        #print("get took: {:f} seconds.".format(time.time()-timer))
-        #timer = time.time()
         cfile.save(storage_file_path)
-        #print("save took: {:f} seconds.".format(time.time()-timer))
 
     def quit(self):
         for cam in self.cameras:

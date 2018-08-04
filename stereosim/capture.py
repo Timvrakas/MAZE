@@ -50,7 +50,6 @@ class CaptureSession(object):
 
     def capture(self):
         print('Capturing an image...')
-        timstart = time.time()
         file_path = self.session.get_folder_path()
         file_name = self.session.get_file_name()
 
@@ -62,11 +61,11 @@ class CaptureSession(object):
         for (image_path, camera_name) in saved_images:
             create_label(image_path, camera_name, ptu_angle, imu_data)
         self.session.image_count(inc=True)
-        print('Total capture time ' + str(time.time() - timstart) + ' seconds.')
+
         if(self.viewtoggle):
             self.preview(file_path, file_name)
 
-        print(saved_images)
+        logger.info("Captured Image Pair: {}".format(saved_images))
         return saved_images
 
     def pos_arr(self, pos):
@@ -150,8 +149,7 @@ class CaptureSession(object):
             logger.info('Current Position:- Az: {}, El: {}, '
                         'Current File:- {}'.format(curr_az, curr_el, filename))
             # capture image
-            camera_files = self.capture()
-            logger.info(camera_files)
+            self.capture()
 
             file_name_count += 1
 
@@ -161,8 +159,7 @@ class CaptureSession(object):
         num = int(amount)
         count = 1
         for x in range(1, num+1):
-            camera_files = self.capture()
-            # logger.info(camera_files)
+            self.capture()
             print(count, "/", num)
             count += 1
 
@@ -190,7 +187,6 @@ class CaptureSession(object):
         file_name = a+"_"+c+"."+d
         call(["eog", file_path+"/LEFT/L_"+file_name, "&",
               "eog", "-n", file_path+"/RIGHT/R_"+file_name])
-        # print('view')
 
     def create_session(self):
         no = self.session.new_session()
