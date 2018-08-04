@@ -7,7 +7,7 @@ from PIL import Image
 from subprocess import call
 
 from flir_ptu.ptu import PTU
-from stereosim.stereosim import StereoCamera, CameraID
+from stereosim.stereo_camera import StereoCamera, CameraID
 from stereosim.session import start_session
 from stereosim.imu import IMU
 
