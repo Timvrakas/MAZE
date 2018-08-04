@@ -3,7 +3,9 @@ import os
 import configparser
 import contextlib
 import datetime
+import logging
 
+logger = logging.getLogger(__name__)
 
 class Session:
     CONFIG_FILE = '.config/stereosim.ini'
@@ -17,7 +19,7 @@ class Session:
             try:
                 os.makedirs(self.folder_path)
             except:
-                print("%s doesn't exist and couldn't be created." %
+                logger.warning("%s doesn't exist and couldn't be created." %
                       self.folder_path)
 
     def setup(self):
