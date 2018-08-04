@@ -2,7 +2,7 @@ import os
 import yaml
 import exiftool
 
-def create_label(image_path, camera_name, IMU_data, ptu_dict):
+def create_label(image_path, camera_name, ptu_angle, IMU_data,):
         """ Create label for captured image.
         Parameters
         ----------
@@ -18,19 +18,17 @@ def create_label(image_path, camera_name, IMU_data, ptu_dict):
         #focal_length = '{}'.format(meta['XMP:FocalLength'])
         focal_length = '{}'.format(flmeta)
 
-        pp = ptu_dict['pp']
-        tp = ptu_dict['tp']
-        az = ptu_dict['az']
-        el = ptu_dict['el']
-
+        #pp = ptu_dict['pp']
+        #tp = ptu_dict['tp']
+        az = ptu_angle[0]
+        el = ptu_angle[1] 
         IMU_quaternion = IMU_data["quat"]
-
         yaml_path = os.path.splitext(image_path)[0]
         contents = {
             'AZIMUTH': az,
             'ELEVATION': el,
-            'PP': float(pp),
-            'TP': float(tp),
+            #'PP': float(pp),
+            #'TP': float(tp),
             'f': float(focal_length),
             # 'pr': ptu.pan_res(),
             # 'tr': ptu.tilt_res(),

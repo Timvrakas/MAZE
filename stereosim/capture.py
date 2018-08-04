@@ -23,13 +23,12 @@ logger.setLevel(logging.INFO)
 
 class CaptureSession(object):
 
-    def __init__(self, cam, ptu, imu, session, ptudict):
+    def __init__(self, cam, ptu, imu, session):
         self.cam = cam
         self.ptu = ptu
         self.imu = imu
         self.session = session
         self.viewtoggle = False
-        self.ptudict = ptudict
 
     def point(self, az=None, el=None):
         if az is None and el is None:
@@ -42,15 +41,7 @@ class CaptureSession(object):
             az = az
             el = int(input('Azimuth : {} \n Enter Elevation: '.format(az)))
 
-        self.ptu.pan_angle(az)
-        self.ptu.tilt_angle(el)
-        pp = self.ptu.pan()
-        tp = self.ptu.tilt()
-        self.ptudict['az'] = az
-        self.ptudict['el'] = el
-        self.ptudict['pp'] = pp
-        self.ptudict['tp'] = tp
-        print('PP: ', pp, '\n', 'TP: ', tp)
+        self.ptu.slew_to_angle((az,el))
 
     def settings(self):
         print('Setting up camera Parameters')
@@ -64,12 +55,12 @@ class CaptureSession(object):
         file_name = self.session.get_file_name()
 
         imu_data = self.imu.getData()
+        ptu_angle = self.ptu.get_angle()
 
         saved_images = self.cam.capture_image(file_path, file_name)
 
-        for image_path, camera_name in saved_images: 
-            create_label(image_path, camera_name, self.ptudict, imu_data)
-
+        for (image_path, camera_name) in saved_images:
+            create_label(image_path, camera_name, ptu_angle, imu_data)
         self.session.image_count(inc=True)
         print('Total capture time ' + str(time.time() - timstart) + ' seconds.')
         if(self.viewtoggle):
@@ -145,8 +136,7 @@ class CaptureSession(object):
         file_name_count = 1
 
         # Move to the origin (0,0)
-        self.ptu.pan_angle(0)
-        self.ptu.tilt_angle(0)
+        self.ptu.slew_to_angle((0,0))
         curr_az = 0
         curr_el = 0
 
@@ -255,15 +245,7 @@ def main():
     imu.connect()
 
     with start_session() as session:
-        if ptu.stream.is_connected:
-            pdict = {
-                'pp': ptu.pan(),
-                'tp': ptu.tilt(),
-                'az': round(float(ptu.pan())*(92.5714/3600), 5),
-                'el': ptu.tilt_angle()}
-        else:
-            print('Restart, Turn cameras on and off and unplug and replug IMU')
-        cap_ses = CaptureSession(cam, ptu, imu, session, pdict)
+        cap_ses = CaptureSession(cam, ptu, imu, session)
         while True:
             command_input = input('> ')
             cap_ses.test_case(command_input)
