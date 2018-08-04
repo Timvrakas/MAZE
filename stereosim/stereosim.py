@@ -7,6 +7,7 @@ import pickle
 import os
 import logging
 import io
+import time
 import sys
 import math
 import yaml
@@ -41,7 +42,7 @@ class StereoCamera():
 
     def __init__(self):
         self.context = gp.Context()
-        self.ptudict = None
+        self.pool = ThreadPool(2)
 
     def detect_cameras(self):
         """ Detects the connected cameras and if the ownername matches
@@ -198,6 +199,7 @@ class StereoCamera():
         return focal_len
     '''
 
+    # TODO: This has to be totaly reworked...
     def get_stats(self, camera_id=None):
         stats = ['aperture', 'shutterspeed', 'iso', 'focallength']
         stats_array = []
@@ -208,20 +210,27 @@ class StereoCamera():
             indexes = [camera_id]
 
         for index in indexes:
+
             cam = self.cameras[index]
             stats_dict = dict()
             logger.info("{} Camera Stats:".format(cam._camera_name))
             filename = "specs.jpg"
+
             curr_dir = os.path.dirname(os.path.realpath(__file__))
             test_file = os.path.join(curr_dir, filename)
             if os.path.isfile(test_file):
                 os.remove(test_file)
+
             old_image_setting = self._get_config(
                 "imageformat", self.cameras[index])
+
             self.set_config("imageformat", "Small Normal JPEG", index)
             onboard_path = self.trigger_capture(self.cameras[index])
-            test_file = self.get_image_from_camera(
-                self.cameras[index], onboard_path, curr_dir, filename)
+
+            test_file = os.path.join(curr_dir, filename)
+            self.get_image_from_camera(
+                self.cameras[index], onboard_path, test_file)
+
             for stat in stats:
                 if stat == 'focallength' or stat == 'shutterspeed':
                     value = self.get_specs(stat, test_file)
@@ -229,12 +238,14 @@ class StereoCamera():
                     value = self._get_config(stat, cam)
                 logger.info("\t {}: {}".format(stat, value))
                 stats_dict[stat] = value
+
             stats_array.append(stats_dict)
             os.remove(test_file)
+
             self.set_config("imageformat", old_image_setting, index)
         return stats_array
 
-    def capture_image(self, storage_path, ptudict, IMU_data, filename=None):
+    def capture_image(self, storage_path, ptu_dict, IMU_data, filename_base=None):
         """ Capture images on both the cameras
         The files will stored as below
             storage_path
@@ -248,56 +259,54 @@ class StereoCamera():
         storage_path : str
             Location where the files will be stored
         filename : str
-        ptudict : dict
 
         Returns
         -------
         Array : [Left camera filename, Right camera filename]
         """
 
-        self.ptudict = ptudict
+        # PART ONE: capture the images to the camera internal memory card.
+        timer = time.time()
+
+        # Spin threads to capture images
+        camera_onboard_paths = self.pool.map(
+            self.trigger_capture, self.cameras)
+
+        print("Capture Process took: {:f} seconds.".format(
+            time.time() - timer))
+
+        # PART TWO: transfer the images from the camera
+        timer = time.time()
 
         if not os.path.isdir(storage_path):
-            raise Exception("Invalid path: {}".format(storage_path))
-        logger.debug(os.path.join(storage_path, 'LEFT'))
-        if not os.path.isdir(os.path.join(storage_path, 'LEFT')):
-            os.mkdir(os.path.join(storage_path, 'LEFT'))
-
-        if not os.path.isdir(os.path.join(storage_path, 'RIGHT')):
-            os.mkdir(os.path.join(storage_path, 'RIGHT'))
+            os.mkdir(storage_path)
 
         stored_file_paths = []
-        camera_onboard_paths = []
 
-        cameras_test = [self.cameras[0], self.cameras[1]]
-        pool = ThreadPool(4)
+        for cam in self.cameras:  # Generate filenames
+            camera_dir = os.path.join(storage_path, cam._camera_name)
+            if not os.path.isdir(camera_dir):
+                os.mkdir(camera_dir)
+            if(self._get_config('imageformat', cam) == 'RAW'):
+                file_ext = ".CRW"
+            else:
+                file_ext = ".JPG"
+            filename = cam._camera_name[0] + '_' + filename_base + file_ext
+            file_path = os.path.join(camera_dir, filename)
+            stored_file_paths.append(file_path)
 
-        camera_onboard_paths = pool.map(self.trigger_capture, cameras_test)
+        get_image_args = list(
+            zip(*(self.cameras, camera_onboard_paths, stored_file_paths)))
 
-        pool.close()
-        pool.join()
+        self.pool.starmap(
+            self.get_image_from_camera, get_image_args)
 
-        filenamer = filename
-        filenamel = filename
-        print('filename: ' + filename)
-        folderr = ''
-        folderl = ''
-        for cam, location in zip(self.cameras, camera_onboard_paths):
-            folder = os.path.join(storage_path, cam._camera_name)
-            if folder.startswith('RIGHT', 36, 41):
-                folderr = folder
-                filenamer = 'R_' + filename
-            if folder.startswith('LEFT', 36, 40):
-                folderl = folder
-                filenamel = 'L_' + filename
-        getimageargs = [(self.cameras[0], camera_onboard_paths[0], folderl, filenamel, IMU_data),
-                        (self.cameras[1], camera_onboard_paths[1], folderr, filenamer, IMU_data)]
+        print("Transfer Process took: {:f} seconds.".format(
+            time.time() - timer))
 
-        pool = ThreadPool(4)
-        stored_file_paths = pool.starmap(
-            self.get_image_from_camera, getimageargs)
-        pool.close()
-        pool.join()
+        '''if filename != "specs.jpg":
+            # TODO: This should really be called from capture_image, not from here.
+            self.create_label(camera, camera_file, IMU_data, ptu_dict)'''
 
         return stored_file_paths
 
@@ -320,36 +329,24 @@ class StereoCamera():
             "File path: {}/{}".format(file_path.folder, file_path.name))
         return file_path
 
-    def get_image_from_camera(self, camera, camera_file_path, storage_path, filename=None, IMU_data=None):
+    def get_image_from_camera(self, camera, camera_file_path, storage_file_path):
         """ Capture image on single camera
 
         Parameters
         ----------
         camera : camera_object
         camera_file_path : path of the image on the camera
-        storage_path : str
-        filename : str
-
-        Returns
-        -------
-        str
-            The path of the captured image
+        storage_file_path : file location to save
         """
+        #timer = time.time()
         cfile = camera.file_get(camera_file_path.folder, camera_file_path.name,
                                 gp.GP_FILE_TYPE_NORMAL, self.context)
-        camera_file = ''
-        if filename:
-            camera_file = os.path.join(storage_path, filename)
-        else:
-            camera_file = os.path.join(storage_path, camera_file_path.name)
-        #logger.info("Storing file at {}".format(camera_file))
-        cfile.save(camera_file)
-        if filename != "specs.jpg":
-            # TODO: This should really be called from capture_image, not from here.
-            self.create_label(camera, camera_file, IMU_data)
-        return camera_file
+        #print("get took: {:f} seconds.".format(time.time()-timer))
+        #timer = time.time()
+        cfile.save(storage_file_path)
+        #print("save took: {:f} seconds.".format(time.time()-timer))
 
-    def create_label(self, camera, file_path, IMU_data):
+    def create_label(self, camera, file_path, IMU_data, ptu_dict):
         """ Create label for captured image.
 
         Parameters
@@ -365,10 +362,10 @@ class StereoCamera():
         #focal_length = '{}'.format(meta['XMP:FocalLength'])
         focal_length = '{}'.format(flmeta)
 
-        pp = self.ptudict['pp']
-        tp = self.ptudict['tp']
-        az = self.ptudict['az']
-        el = self.ptudict['el']
+        pp = ptu_dict['pp']
+        tp = ptu_dict['tp']
+        az = ptu_dict['az']
+        el = ptu_dict['el']
 
         IMU_quaternion = IMU_data["quat"]
 
@@ -395,6 +392,7 @@ class StereoCamera():
             cam.exit(self.context)
 
 
+'''
 def main():
     logging.basicConfig(
         format='%(levelname)s: %(name)s: %(message)s', level=logging.ERROR)
@@ -416,3 +414,4 @@ def main():
 
 if __name__ == "__main__":
     sys.exit(main())
+'''  # this is old...

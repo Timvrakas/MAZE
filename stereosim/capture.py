@@ -58,26 +58,20 @@ class CaptureSession(object):
 
     def capture(self):
         print('Capturing an image...')
-        timstart = time.time()
+        #timstart = time.time()
         file_path = self.session.get_folder_path()
         file_name = self.session.get_file_name()
-        print('file_path: ', file_path)
-
-        if(self.cam.get_config('imageformat', CameraID.RIGHT) == 'RAW' and self.cam.get_config('imageformat', CameraID.LEFT) == 'RAW'):
-            file_name = file_name.replace("jpg", "crw")
-        elif(self.cam.get_config('imageformat', CameraID.RIGHT) == 'RAW' or self.cam.get_config('imageformat', CameraID.LEFT) == 'RAW'):
-            print(
-                'image format of one of the cameras is not the same as the other please readjust')
 
         imu_data = self.imu.getData()
 
         camera_file_paths = self.cam.capture_image(
             file_path, self.ptudict, imu_data, file_name)
         self.session.image_count(inc=True)
-        print('Total capture time ' + str(time.time() - timstart) + ' seconds.')
+        #print('Total capture time ' + str(time.time() - timstart) + ' seconds.')
         if(self.viewtoggle):
             self.preview(file_path, file_name)
 
+        print(camera_file_paths)
         return camera_file_paths
 
     def pos_arr(self, pos):

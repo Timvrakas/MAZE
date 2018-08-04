@@ -56,7 +56,7 @@ class Session:
             return int(count)
 
     def get_file_name(self):
-        return "{:03d}_{:04d}.jpg".format(self.session_number(), self.image_count())
+        return "{:03d}_{:04d}".format(self.session_number(), self.image_count())
 
     def get_folder_path(self, new=False):
         if new:
