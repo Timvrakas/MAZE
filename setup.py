@@ -26,7 +26,7 @@ requirements = [
 
 setup(
     name='stereosim',
-    version='0.1.0',
+    version='0.2.0',
     description="Mastcam-Z Stereo Simulator System",
     long_description=readme + '\n\n' + history,
     author="Austin Godber",

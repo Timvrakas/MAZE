@@ -9,6 +9,9 @@ from stereosim.imu import IMU
 from stereosim.label import create_label
 from stereosim.console import Console
 
+logger = logging.getLogger(__name__)
+
+
 class MAZE(object):
 
     def __init__(self, cam, ptu, imu, session):
@@ -41,11 +44,11 @@ class MAZE(object):
         return saved_images
 
     def mosaic(self, positions):
-        """ Capture a mosiac based on the positions provided.""" 
+        """ Capture a mosiac based on the positions provided."""
         file_name_count = 1
 
         # Move to the origin (0,0)
-        self.ptu.slew_to_angle((0,0))
+        self.ptu.slew_to_angle((0, 0))
 
         for pos in positions:
             # point camera
@@ -57,7 +60,7 @@ class MAZE(object):
             self.capture()
             file_name_count += 1
 
-    def bulk(self,count):
+    def bulk(self, count):
         # take  a bunch of pictures
         for x in range(1, count+1):
             self.capture()
@@ -70,25 +73,27 @@ class MAZE(object):
         self.cam.quit()
         self.imu.disconnect()
         self.ptu.stream.close()
+        logger.info("Exiting")
+
 
 def main():
     cam = StereoCamera()
     ptu = PTU("10.5.1.2", 4000)
     imu = IMU()
-    
-    session = start_session()
 
-    cam.detect_cameras()
-    ptu.connect()
-    imu.connect()
+    with start_session() as session:
+        cam.detect_cameras()
+        ptu.connect()
+        imu.connect()
 
-    maze = MAZE(cam, ptu, imu, session)
+        maze = MAZE(cam, ptu, imu, session)
 
-    console = Console(maze)
-    
-    while True:
-        command_input = input('> ')
-        console.test_case(command_input)
+        console = Console(maze)
+
+        while True:
+            command_input = input('> ')
+            console.test_case(command_input)
+
 
 if __name__ == "__main__":
     main()

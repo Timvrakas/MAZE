@@ -1,7 +1,7 @@
 import sys
-from stereosim import MAZE
 from subprocess import call
 import logging
+import numpy as np
 
 logger = logging.getLogger()
 handler = logging.StreamHandler()
@@ -26,7 +26,7 @@ class Console(object):
         print(' c - To capture an image')
         print(' m - To take a mosaic')
         print(' s - To set camera parameteres (focal length, ISO, Aperture etc.)')
-        print(' v - To view latest image')
+        #print(' v - To view latest image')
         print(' b - To take a bunch of pictures at one PTU direction')
         print(' t - To toggle image preview')
         print(' q - To quit the code')
@@ -51,7 +51,7 @@ class Console(object):
 
     def capture(self):
         print('Capturing an image...')
-        saved_images = self.maze.capture
+        saved_images = self.maze.capture()
 
         if(self.viewtoggle):
             for image in saved_images:
@@ -91,13 +91,14 @@ class Console(object):
                           "\n enter 'q' to quit program: ")
         print('-' * 50)
         if positions == 'd':
-            positions = '0,0,15,0,15,0,0,-15,-15,0,-15,0'
-            print('positions : (0, 0), (15, 0), (15, 0),'
-                  '(0, -15), (-15, 0), (-15, 0)')
+            positions = '0,0,15,0,30,0,30,-15,15,-15,0,-15'
+            print('positions : (0, 0), (15, 0), (30, 0),'
+                  '(30, -15), (15, -15), (0, -15)')
             print('-' * 50)
         if positions == 'q':
             self.quit()
         positions = self.pos_arr(positions)
+        self.maze.mosaic(positions)
 
     def settings(self):
         print('Setting up camera Parameters')
@@ -119,7 +120,7 @@ class Console(object):
 
     def bulk(self):
         # take  a bunch of pictures
-        amount = input("\n Input the number of images you want to take ")
+        amount = input("\n Input the number of images you want to take: ")
         num = int(amount)
         self.maze.bulk(num)
 
@@ -137,5 +138,4 @@ class Console(object):
 
     def quit(self):
         self.maze.quit()
-        print('quit')
         sys.exit()
