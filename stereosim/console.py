@@ -2,6 +2,8 @@ import sys
 from subprocess import call
 import logging
 import numpy as np
+from stereosim.maze import MAZE
+from stereosim.session import start_session
 
 logger = logging.getLogger()
 handler = logging.StreamHandler()
@@ -13,8 +15,9 @@ logger.setLevel(logging.INFO)
 
 class Console(object):
 
-    def __init__(self, maze):
-        self.maze = maze
+    def __init__(self):
+        self.maze = MAZE()
+        self.maze.connect()
         self.viewtoggle = False
 
     def command_help(self):
@@ -26,7 +29,7 @@ class Console(object):
         print(' c - To capture an image')
         print(' m - To take a mosaic')
         print(' s - To set camera parameteres (focal length, ISO, Aperture etc.)')
-        #print(' v - To view latest image')
+        # print(' v - To view latest image') TODO: Fix this
         print(' b - To take a bunch of pictures at one PTU direction')
         print(' t - To toggle image preview')
         print(' q - To quit the code')
@@ -137,5 +140,16 @@ class Console(object):
         call(["eog", file, "&"])
 
     def quit(self):
-        self.maze.quit()
+        self.maze.disconnect()
         sys.exit()
+
+
+def main():
+        console = Console()
+        while True:
+            command_input = input('> ')
+            console.test_case(command_input)
+
+
+if __name__ == "__main__":
+    main()

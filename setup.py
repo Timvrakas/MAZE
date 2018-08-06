@@ -21,7 +21,8 @@ requirements = [
     'exifread',
     'flir_ptu',
     'pyserial',
-    'ocrd-pyexiftool'
+    'ocrd-pyexiftool',
+    'remi'
 ]
 
 setup(
@@ -40,7 +41,7 @@ setup(
     include_package_data=True,
     install_requires=requirements,
     dependency_links=[
-        'git+https://github.com/nikhilkalige/flir.git#egg=flir_ptu'],
+        'git+https://genovesa.sese.asu.edu/timv/flir_ptu.git#egg=flir_ptu'],
     license="BSD",
     zip_safe=False,
     keywords='stereosim',
@@ -57,7 +58,8 @@ setup(
         "console_scripts": [
             "generate_pds = stereosim.generate_pds:main",
             "populate_pds = stereosim.populate_pds:main",
-            "capture = stereosim.capture:main"
+            "console = stereosim.console:main"
+            "web = stereosim.web:main"
         ]
     }
 )

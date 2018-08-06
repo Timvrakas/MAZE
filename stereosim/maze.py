@@ -4,21 +4,28 @@ import numpy as np
 
 from flir_ptu.ptu import PTU
 from stereosim.stereo_camera import StereoCamera, CameraID
-from stereosim.session import start_session
 from stereosim.imu import IMU
 from stereosim.label import create_label
 from stereosim.console import Console
+from stereosim.session import Session
 
 logger = logging.getLogger(__name__)
 
 
 class MAZE(object):
 
-    def __init__(self, cam, ptu, imu, session):
-        self.cam = cam
-        self.ptu = ptu
-        self.imu = imu
-        self.session = session
+    def __init__(self):
+        self.cam = StereoCamera()
+        self.ptu = PTU("10.5.1.2", 4000)
+        self.imu = IMU()
+        self.session = Session("/srv/stereosim")
+
+    def connect(self):
+        logger.info("Connecting")
+        self.cam.detect_cameras()
+        self.ptu.connect()
+        self.imu.connect()
+        self.session.setup()
 
     def point(self, angle):
         self.ptu.slew_to_angle(angle)
@@ -69,31 +76,9 @@ class MAZE(object):
     def new_session(self):
         return self.session.new_session()
 
-    def quit(self):
+    def disconnect(self):
         self.cam.quit()
         self.imu.disconnect()
         self.ptu.stream.close()
-        logger.info("Exiting")
-
-
-def main():
-    cam = StereoCamera()
-    ptu = PTU("10.5.1.2", 4000)
-    imu = IMU()
-
-    with start_session() as session:
-        cam.detect_cameras()
-        ptu.connect()
-        imu.connect()
-
-        maze = MAZE(cam, ptu, imu, session)
-
-        console = Console(maze)
-
-        while True:
-            command_input = input('> ')
-            console.test_case(command_input)
-
-
-if __name__ == "__main__":
-    main()
+        self.session.teardown()
+        logger.info("Disconnected")
