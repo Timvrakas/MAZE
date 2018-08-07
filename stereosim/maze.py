@@ -12,6 +12,7 @@ from multiprocessing.managers import BaseManager
 
 logger = logging.getLogger(__name__)
 
+
 class MAZE(object):
 
     def __init__(self):
@@ -99,9 +100,10 @@ class MAZE(object):
         else:
             logger.info("Already Disconnected")
 
+
 def main():
     maze = MAZE()
-    BaseManager.register('get_maze', callable=lambda:maze)
+    BaseManager.register('get_maze', callable=lambda: maze)
     manager = BaseManager(address=('', 50000), authkey=b'abc')
     server = manager.get_server()
     server.serve_forever()

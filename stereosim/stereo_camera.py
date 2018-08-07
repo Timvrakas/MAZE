@@ -32,7 +32,8 @@ class StereoCamera():
         self.context = gp.Context()
         self.pool = ThreadPool(2)
         self.cameras = [None, None]
-        self.connected = (self.cameras[CameraID.LEFT] is not None) and (self.cameras[CameraID.RIGHT] is not None)
+        self.connected = (self.cameras[CameraID.LEFT] is not None) and (
+            self.cameras[CameraID.RIGHT] is not None)
 
     def detect_cameras(self):
         """ Detects the connected cameras and if the ownername matches
@@ -260,7 +261,8 @@ class StereoCamera():
         camera_onboard_paths = self.pool.map(
             self.trigger_capture, self.cameras)
 
-        logger.debug("Capture Process took: {:f} seconds.".format(time.time() - timer))
+        logger.debug("Capture Process took: {:f} seconds.".format(
+            time.time() - timer))
 
         # PART TWO: transfer the images from the camera
         timer = time.time()
@@ -290,9 +292,10 @@ class StereoCamera():
         self.pool.starmap(
             self.get_image_from_camera, get_image_args)
 
-        logger.debug("Transfer Process took: {:f} seconds.".format(time.time() - timer))
+        logger.debug("Transfer Process took: {:f} seconds.".format(
+            time.time() - timer))
 
-        return list(zip(stored_file_paths,camera_names))
+        return list(zip(stored_file_paths, camera_names))
 
     def trigger_capture(self, camera):
         """ Trigger image capture
