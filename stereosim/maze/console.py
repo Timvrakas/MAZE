@@ -2,8 +2,7 @@ import sys
 from subprocess import call
 import logging
 import numpy as np
-import stereosim.maze as maze
-import stereosim.web_preview as web_preview
+from stereosim.maze import maze, web_preview
 from multiprocessing import Process
 from multiprocessing.managers import BaseManager
 import time

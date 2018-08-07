@@ -1,13 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
-import numpy as np
-
-from flir_ptu.ptu import PTU
-from stereosim.stereo_camera import StereoCamera, CameraID
+from flir_ptu import ptu
+from stereosim.maze import stereo_camera, imu, session, label
 from multiprocessing import Lock
-from stereosim.imu import IMU
-from stereosim.label import create_label
-from stereosim.session import Session
 from multiprocessing.managers import BaseManager
 
 logger = logging.getLogger(__name__)
@@ -16,10 +11,10 @@ logger = logging.getLogger(__name__)
 class MAZE(object):
 
     def __init__(self):
-        self.cam = StereoCamera()
-        self.ptu = PTU("10.5.1.2", 4000)
-        self.imu = IMU()
-        self.session = Session("/srv/stereosim")
+        self.cam = stereo_camera.StereoCamera()
+        self.ptu = ptu.PTU("10.5.1.2", 4000)
+        self.imu = imu.IMU()
+        self.session = session.Session("/srv/stereosim")
         self.last_images = [None, None]
         self.connected = False
 
@@ -55,7 +50,7 @@ class MAZE(object):
         saved_images = self.cam.capture_image(file_path, file_name)
 
         for (image_path, camera_name) in saved_images:
-            create_label(image_path, camera_name, ptu_angle, imu_data)
+            label.create_label(image_path, camera_name, ptu_angle, imu_data)
 
         self.session.image_count(inc=True)
 
