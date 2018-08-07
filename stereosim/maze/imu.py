@@ -58,6 +58,6 @@ class IMU():
 
     def disconnect(self):
         self.kill.set()
-        self.thread.join()
+        #self.thread.join() #TODO: Change this to processes, so that we can terminate it...
         self.ser_port.close()
         logger.info("IMU Disconnected")
