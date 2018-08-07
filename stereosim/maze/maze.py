@@ -26,10 +26,14 @@ class MAZE(object):
             self.disconnect()
 
         logger.info("Connecting")
+
         cam_status = self.cam.detect_cameras()
+
         self.ptu.connect()
         ptu_status = self.ptu.stream.is_connected
+
         imu_status = self.imu.connect()
+
         self.session.setup()
         self.connected = True
         return cam_status, ptu_status, imu_status
@@ -41,6 +45,7 @@ class MAZE(object):
         self.cam.get_stats()
 
     def capture(self):
+
         file_path = self.session.get_folder_path()
         file_name = self.session.get_file_name()
 

@@ -161,16 +161,16 @@ def main():
             command_input = input('> ')
             if not console.test_case(command_input):
                 break
+    except Exception as e:
+        raise e
     finally:
         logger.info("Exiting Web Server")
         web_proc.terminate()
-        web_proc.join()
+        #web_proc.join()
 
         logger.info("Exiting MAZE")
         maze_proc.terminate()
-        maze_proc.join()
-
-        sys.exit()  # Goodbye!
+        #maze_proc.join()
 
 
 if __name__ == "__main__":
