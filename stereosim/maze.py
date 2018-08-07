@@ -10,7 +10,7 @@ from stereosim.label import create_label
 from stereosim.session import Session
 from multiprocessing.managers import BaseManager
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 class MAZE(object):
 
@@ -20,17 +20,22 @@ class MAZE(object):
         self.imu = IMU()
         self.session = Session("/srv/stereosim")
         self.last_images = [None, None]
+        self.connected = False
 
     def get_last_images(self):
         return self.last_images
 
     def connect(self):
+        if self.connected:
+            self.disconnect()
+
         logger.info("Connecting")
         cam_status = self.cam.detect_cameras()
         self.ptu.connect()
         ptu_status = self.ptu.stream.is_connected
         imu_status = self.imu.connect()
         self.session.setup()
+        self.connected = True
         return cam_status, ptu_status, imu_status
 
     def point(self, angle):
@@ -84,11 +89,15 @@ class MAZE(object):
         return self.session.new_session()
 
     def disconnect(self):
-        self.cam.quit()
-        self.imu.disconnect()
-        self.ptu.stream.close()
-        self.session.teardown()
-        logger.info("Disconnected")
+        if(self.connected):
+            self.cam.disconnect()
+            self.imu.disconnect()
+            self.ptu.stream.close()
+            self.session.teardown()
+            logger.info("Disconnected")
+            self.connected = False
+        else:
+            logger.info("Already Disconnected")
 
 def main():
     maze = MAZE()

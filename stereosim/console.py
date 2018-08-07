@@ -29,13 +29,18 @@ class Console(object):
         print('-----------------------------------------------------------------')
         print('                         Commands List                           ')
         print('-----------------------------------------------------------------')
-        print(' n - To start new session')
+        print(' d - To disconnect all hardware')
+        print(' r - To reconnect all hardware')
+        print(' n - To start new session (increment session number)')
+        print(' q - To quit the code')
+        print('-----------------------------------------------------------------')
         print(' p - To set PTU direction')
         print(' c - To capture an image')
-        print(' m - To take a mosaic')
-        print(' s - To set camera parameteres (focal length, ISO, Aperture etc.)')
+        print('-----------------------------------------------------------------')
         print(' b - To take a bunch of pictures at one PTU direction')
-        print(' q - To quit the code')
+        print(' m - To take a mosaic')
+        print('-----------------------------------------------------------------')
+        print(' s - To retrive camera parameters')
         print('-----------------------------------------------------------------')
 
     def test_case(self, command_input):
@@ -44,6 +49,8 @@ class Console(object):
                    's': self.settings,
                    'c': self.capture,
                    'm': self.mosaic,
+                   'd': self.maze.disconnect,
+                   'r': self.maze.connect,
                    'b': self.bulk,
                    'q': self.quit,
                    '?': self.command_help}
@@ -52,6 +59,9 @@ class Console(object):
         except KeyError:
             print('Enter Valid Option')
             self.command_help()
+        if command_input == 'q':
+            return False
+        return True
 
     def capture(self):
         print('Capturing an image...')
@@ -130,25 +140,39 @@ class Console(object):
 
     def quit(self):
         self.maze.disconnect()
-        sys.exit()
+
 
 def main():
-        #Start MAZE Process
-        Mp = Process(target=maze.main)
-        Mp.start()
-        logger.info('Started MAZE in PID: {}'.format(Mp.pid))
-        time.sleep(0.1) #Wait for manager to spin up
 
-        #Start Web Process
-        Wp = Process(target=web_preview.startServer)
-        Wp.start()
-        logger.info('Started Web Server in PID: {}'.format(Wp.pid))
+        # Start MAZE Process
+    maze_proc = Process(target=maze.main)
+    maze_proc.start()
+    logger.info('Started MAZE in PID: {}'.format(maze_proc.pid))
+    time.sleep(0.1)  # Wait for manager to spin up
 
-        #Start Console (This Process)
+    # Start Web Process
+    web_proc = Process(target=web_preview.startServer)
+    web_proc.start()
+    logger.info('Started Web Server in PID: {}'.format(web_proc.pid))
+
+    # Start Console (This Process)
+    try:
         console = Console()
         while True:
             command_input = input('> ')
-            console.test_case(command_input)
+            if not console.test_case(command_input):
+                break
+    finally:
+        logger.info("Exiting Web Server")
+        web_proc.terminate()
+        web_proc.join()
+
+        logger.info("Exiting MAZE")
+        maze_proc.terminate()
+        maze_proc.join()
+
+        sys.exit()  # Goodbye!
+
 
 if __name__ == "__main__":
     main()

@@ -31,6 +31,8 @@ class StereoCamera():
     def __init__(self):
         self.context = gp.Context()
         self.pool = ThreadPool(2)
+        self.cameras = [None, None]
+        self.connected = (self.cameras[CameraID.LEFT] is not None) and (self.cameras[CameraID.RIGHT] is not None)
 
     def detect_cameras(self):
         """ Detects the connected cameras and if the ownername matches
@@ -43,7 +45,7 @@ class StereoCamera():
         if len(_cameras) == 0:
             raise Exception("Unable to find any camera")
         # Stores the left and right camera
-        self.cameras = [None, None]
+
         ports = gp.PortInfoList()
         ports.load()
 
@@ -66,18 +68,16 @@ class StereoCamera():
                     camera._camera_name = self.LEFTNAME
                     camera._camera_id = CameraID.LEFT
                     self.cameras[CameraID.LEFT] = camera
-                    msg[CameraID.LEFT] = True, "Connected: " + \
-                        str(abilities.model)
+                    msg[CameraID.LEFT] = True, str(abilities.model)
+                    logger.info("Connected: " + str(abilities.model))
                 elif ownername == self.RIGHTNAME:
                     camera._camera_name = self.RIGHTNAME
                     camera._camera_id = CameraID.RIGHT
                     self.cameras[CameraID.RIGHT] = camera
-                    msg[CameraID.RIGHT] = True, "Connected: " + \
-                        str(abilities.model)
+                    msg[CameraID.RIGHT] = True, str(abilities.model)
+                    logger.info("Connected: " + str(abilities.model))
 
-        connected = (self.cameras[CameraID.LEFT] is not None) and (
-            self.cameras[CameraID.RIGHT] is not None)
-        return connected, msg
+        return self.connected, msg
 
     def get_summary(self):
         """ Prints the summary of the cameras as defined by gphoto2
@@ -323,6 +323,8 @@ class StereoCamera():
                                 gp.GP_FILE_TYPE_NORMAL, self.context)
         cfile.save(storage_file_path)
 
-    def quit(self):
+    def disconnect(self):
         for cam in self.cameras:
-            cam.exit(self.context)
+            if(cam is not None):
+                cam.exit(self.context)
+                cam = None

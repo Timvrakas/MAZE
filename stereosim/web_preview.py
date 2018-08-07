@@ -50,4 +50,6 @@ def startServer():
     except FileNotFoundError:
         pass
     sys.stdout = open('flask.log', "w")
+    logging.getLogger('Flask').info(
+        "Starting Preview Server at: http://10.5.0.1:5000/")
     app.run(host='0.0.0.0')
