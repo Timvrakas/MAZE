@@ -58,8 +58,7 @@ setup(
         "console_scripts": [
             "generate_pds = stereosim.generate_pds:main",
             "populate_pds = stereosim.populate_pds:main",
-            "console = stereosim.console:main"
-            "web = stereosim.web:main"
+            "maze = stereosim.console:main"
         ]
     }
 )

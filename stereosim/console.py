@@ -2,8 +2,11 @@ import sys
 from subprocess import call
 import logging
 import numpy as np
-from stereosim.maze import MAZE
-from stereosim.session import start_session
+import stereosim.maze as maze
+import stereosim.web_preview as web_preview
+from multiprocessing import Process
+from multiprocessing.managers import BaseManager
+import time
 
 logger = logging.getLogger()
 handler = logging.StreamHandler()
@@ -16,9 +19,11 @@ logger.setLevel(logging.INFO)
 class Console(object):
 
     def __init__(self):
-        self.maze = MAZE()
+        BaseManager.register('get_maze')
+        manager = BaseManager(address=('', 50000), authkey=b'abc')
+        manager.connect()
+        self.maze = manager.get_maze()
         self.maze.connect()
-        self.viewtoggle = False
 
     def command_help(self):
         print('-----------------------------------------------------------------')
@@ -29,9 +34,7 @@ class Console(object):
         print(' c - To capture an image')
         print(' m - To take a mosaic')
         print(' s - To set camera parameteres (focal length, ISO, Aperture etc.)')
-        # print(' v - To view latest image') TODO: Fix this
         print(' b - To take a bunch of pictures at one PTU direction')
-        print(' t - To toggle image preview')
         print(' q - To quit the code')
         print('-----------------------------------------------------------------')
 
@@ -41,9 +44,7 @@ class Console(object):
                    's': self.settings,
                    'c': self.capture,
                    'm': self.mosaic,
-                   # 'v': self.maze.view,
                    'b': self.bulk,
-                   't': self.toggleview,
                    'q': self.quit,
                    '?': self.command_help}
         try:
@@ -55,10 +56,6 @@ class Console(object):
     def capture(self):
         print('Capturing an image...')
         saved_images = self.maze.capture()
-
-        if(self.viewtoggle):
-            for image in saved_images:
-                self.preview(image[0])
 
     def pos_arr(self, pos):
         """Make an (x,2) position array from a comma seperated list.
@@ -127,29 +124,31 @@ class Console(object):
         num = int(amount)
         self.maze.bulk(num)
 
-    def toggleview(self):
-        self.maze.viewtoggle = not self.maze.viewtoggle
-
     def new_session(self):
         no = self.maze.new_session()
         print("New session with no: {} started".format(no))
-
-    def preview(self, file):
-        #img = Image.open(path+"/LEFT/L_"+name)
-        # img.show() #TODO: show by path...
-        call(["eog", file, "&"])
 
     def quit(self):
         self.maze.disconnect()
         sys.exit()
 
-
 def main():
+        #Start MAZE Process
+        Mp = Process(target=maze.main)
+        Mp.start()
+        logger.info('Started MAZE in PID: {}'.format(Mp.pid))
+        time.sleep(0.1) #Wait for manager to spin up
+
+        #Start Web Process
+        Wp = Process(target=web_preview.startServer)
+        Wp.start()
+        logger.info('Started Web Server in PID: {}'.format(Wp.pid))
+
+        #Start Console (This Process)
         console = Console()
         while True:
             command_input = input('> ')
             console.test_case(command_input)
-
 
 if __name__ == "__main__":
     main()

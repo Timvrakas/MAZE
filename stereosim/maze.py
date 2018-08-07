@@ -4,13 +4,13 @@ import numpy as np
 
 from flir_ptu.ptu import PTU
 from stereosim.stereo_camera import StereoCamera, CameraID
+from multiprocessing import Lock
 from stereosim.imu import IMU
 from stereosim.label import create_label
-from stereosim.console import Console
 from stereosim.session import Session
+from multiprocessing.managers import BaseManager
 
-logger = logging.getLogger(__name__)
-
+logger = logging.getLogger()
 
 class MAZE(object):
 
@@ -19,6 +19,10 @@ class MAZE(object):
         self.ptu = PTU("10.5.1.2", 4000)
         self.imu = IMU()
         self.session = Session("/srv/stereosim")
+        self.last_images = [None, None]
+
+    def get_last_images(self):
+        return self.last_images
 
     def connect(self):
         logger.info("Connecting")
@@ -48,6 +52,7 @@ class MAZE(object):
         self.session.image_count(inc=True)
 
         logger.info("Captured Image Pair: {}".format(saved_images))
+        self.last_images = saved_images
         return saved_images
 
     def mosaic(self, positions):
@@ -82,3 +87,10 @@ class MAZE(object):
         self.ptu.stream.close()
         self.session.teardown()
         logger.info("Disconnected")
+
+def main():
+    maze = MAZE()
+    BaseManager.register('get_maze', callable=lambda:maze)
+    manager = BaseManager(address=('', 50000), authkey=b'abc')
+    server = manager.get_server()
+    server.serve_forever()
