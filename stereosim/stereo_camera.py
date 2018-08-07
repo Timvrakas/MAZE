@@ -75,9 +75,9 @@ class StereoCamera():
                     msg[CameraID.RIGHT] = True, "Connected: " + \
                         str(abilities.model)
 
-        failure = (self.cameras[CameraID.LEFT] is None) or (
-            self.cameras[CameraID.RIGHT] is None)
-        return failure, msg
+        connected = (self.cameras[CameraID.LEFT] is not None) and (
+            self.cameras[CameraID.RIGHT] is not None)
+        return connected, msg
 
     def get_summary(self):
         """ Prints the summary of the cameras as defined by gphoto2

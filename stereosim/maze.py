@@ -26,10 +26,12 @@ class MAZE(object):
 
     def connect(self):
         logger.info("Connecting")
-        self.cam.detect_cameras()
+        cam_status = self.cam.detect_cameras()
         self.ptu.connect()
-        self.imu.connect()
+        ptu_status = self.ptu.stream.is_connected
+        imu_status = self.imu.connect()
         self.session.setup()
+        return cam_status, ptu_status, imu_status
 
     def point(self, angle):
         self.ptu.slew_to_angle(angle)
