@@ -1,0 +1,63 @@
+{% extends "layout.html" %} {% block body %}
+
+<script type="text/javascript">
+    var images;
+    $(function () { //setup function
+
+        setInterval(refreshPreview, 500);
+
+        document.addEventListener('click', function (event) {//Redirects to image file server
+            var target = event.target;
+            if (target.tagName.toLowerCase() == 'a') {
+                var port = target.getAttribute('href').match(/^:(\d+)(.*)/);
+                if (port) {
+                    target.href = port[2];
+                    target.port = port[1];
+                }
+            }
+        }, false); 
+
+        function refreshPreview(){
+            $.ajax({
+            url: '/refresh_preview',
+            type: 'POST',
+            success: function (response) {
+                if (response.image_hash != images){
+                    loadImage();
+                    images = response.image_hash
+                }
+            },
+            error: function (error) {
+                console.log(error);
+            }
+        });
+        }
+
+        function showLoading() {//sets images to loading GIF
+            document.getElementById("leftImage").src = "/static/loading.gif";
+            document.getElementById("rightImage").src = "/static/loading.gif";
+        }
+
+        function loadImage() {//sets images to new image file locations
+            showLoading();
+            var leftImage = new Image();
+            var rightImage = new Image();
+            leftImage.onload = function () {
+                document.getElementById("leftImage").src = this.src;
+            };
+            rightImage.onload = function () {
+                document.getElementById("rightImage").src = this.src;
+            };
+            leftImage.src = "/leftImg.jpg?" + Date.now();
+            rightImage.src = "/rightImg.jpg?" + Date.now();
+        }
+    });
+</script>
+<h1>MAZE Capture Interface</h1>
+<div>
+    <img src="/static/white.jpg" id="leftImage" style="height: 300px">
+    <img src="/static/white.jpg" id="rightImage" style="height: 300px"></div>
+<a href=":80/stereosim" target="_blank">View Captured Images</a>
+
+
+{% endblock %}
