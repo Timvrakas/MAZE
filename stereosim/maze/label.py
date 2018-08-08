@@ -1,7 +1,9 @@
 import os
 import yaml
 import exiftool
+import logging
 
+logger = logging.getLogger(__name__)
 
 def create_label(image_path, camera_name, ptu_angle, IMU_data,):
     """ Create label for captured image.
@@ -23,7 +25,14 @@ def create_label(image_path, camera_name, ptu_angle, IMU_data,):
     #tp = ptu_dict['tp']
     az = ptu_angle[0]
     el = ptu_angle[1]
-    IMU_quaternion = IMU_data["quat"]
+
+    try:
+        IMU_quaternion = IMU_data["quat"]
+    except Exception as e:
+        logger.exception("Quaternion Data Not Found")
+        logger.exception(e)
+        IMU_quaternion = None
+    
     yaml_path = os.path.splitext(image_path)[0]
     contents = {
         'AZIMUTH': az,

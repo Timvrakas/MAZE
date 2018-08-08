@@ -48,17 +48,32 @@ class MAZE(object):
         self.last_images = self.cam.capture_previews()
 
     def capture(self):
+        try:
+            file_path = self.session.get_folder_path()
+            file_name = self.session.get_file_name()
+        except Exception as e:
+            logger.exception("Exception in Session")
+            logger.exception(e)
 
-        file_path = self.session.get_folder_path()
-        file_name = self.session.get_file_name()
+        try:
+            imu_data = self.imu.getData()
+            ptu_angle = self.ptu.get_angle()
+        except Exception as e:
+            logger.exception("IMU/PTU Data Failed")
+            logger.exception(e)
 
-        imu_data = self.imu.getData()
-        ptu_angle = self.ptu.get_angle()
+        try:
+            saved_images = self.cam.capture_images(file_path, file_name)
+        except Exception as e:
+            logger.exception("Capture Failed")
+            logger.exception(e)
 
-        saved_images = self.cam.capture_images(file_path, file_name)
-
-        for image_path, camera_name in zip(saved_images, ('Left','Right')):
-            label.create_label(image_path, camera_name, ptu_angle, imu_data)
+        try:
+            for image_path, camera_name in zip(saved_images, ('Left','Right')):
+                label.create_label(image_path, camera_name, ptu_angle, imu_data)
+        except Exception as e:
+            logger.exception("Capture Failed")
+            logger.exception(e)
 
         self.session.image_count(inc=True)
 
