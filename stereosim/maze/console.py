@@ -56,10 +56,12 @@ class Console(object):
                    'q': self.quit,
                    '?': self.command_help}
         try:
-            options[command_input]()
+            cmd = options[command_input]
         except KeyError:
             print('Enter Valid Option')
             self.command_help()
+        else:
+            cmd()
         if command_input == 'q':
             return False
         return True
@@ -120,6 +122,7 @@ class Console(object):
         self.maze.get_stats()
 
     def point(self, az=None, el=None):
+        try:
         if az is None and el is None:
             az = int(input('Enter Azimuth: '))
             el = int(input('Enter Elevation: '))
@@ -129,13 +132,19 @@ class Console(object):
         elif az is not None and el is None:
             az = az
             el = int(input('Azimuth : {} \n Enter Elevation: '.format(az)))
-
+        except ValueError:
+            logger.error("Value Input Error")
+        else:
         self.maze.point((az, el))
 
     def bulk(self):
         # take  a bunch of pictures
-        amount = input("\n Input the number of images you want to take: ")
+        try:
+            amount = input("Input the number of images you want to take: ")
         num = int(amount)
+        except ValueError:
+            logger.error("Value Input Error")
+        else:
         self.maze.bulk(num)
 
     def new_session(self):
