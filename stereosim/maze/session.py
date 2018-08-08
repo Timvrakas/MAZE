@@ -31,8 +31,7 @@ class Session:
                 'ImageCount': 1,
                 'CurrentSessionFolder': ''
             }
-            with open(self.config_file_path, 'w') as f:
-                self.config.write(f)
+            self.save()
 
         else:
             self.config.read(self.config_file_path)
@@ -47,6 +46,7 @@ class Session:
         if new:
             session_number += 1
             self.config['DEFAULT']['SessionNumber'] = str(session_number)
+            self.save()
 
         return int(session_number)
 
@@ -55,6 +55,7 @@ class Session:
         if inc:
             count += 1
             self.config['DEFAULT']['ImageCount'] = str(count)
+            self.save()
         else:
             return int(count)
 
@@ -67,6 +68,7 @@ class Session:
             folder_name = "session_{:03d}_{}".format(
                 self.session_number(), date)
             self.config['DEFAULT']['CurrentSessionFolder'] = folder_name
+            self.save()
         else:
             folder_name = self.config['DEFAULT']['CurrentSessionFolder']
 
@@ -78,18 +80,9 @@ class Session:
         os.mkdir(folder)
         # reset count
         self.config['DEFAULT']['ImageCount'] = '1'
+        self.save()
         return no
 
-    def teardown(self):
+    def save(self):
         with open(self.config_file_path, 'w') as f:
             self.config.write(f)
-
-
-@contextlib.contextmanager
-def start_session(folder_path="/srv/stereosim"):
-    session = Session(folder_path)
-    try:
-        session.setup()
-        yield session
-    finally:
-        session.teardown()

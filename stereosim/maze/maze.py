@@ -97,7 +97,7 @@ class MAZE(object):
             self.cam.disconnect()
             self.imu.disconnect()
             self.ptu.stream.close()
-            self.session.teardown()
+            self.session.save()
             logger.info("Disconnected")
             self.connected = False
         else:
