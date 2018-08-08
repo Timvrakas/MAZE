@@ -32,6 +32,12 @@ def refresh_preview():
         image_hash = 0
     return jsonify({'image_hash': image_hash})
 
+@app.route('/get_stats', methods=['POST'])
+def get_stats():
+    maze = get_maze()
+    stats = maze.get_stats()
+    return jsonify({'stats' : stats})
+
 
 @app.route('/leftImg.jpg')
 def leftImg():
