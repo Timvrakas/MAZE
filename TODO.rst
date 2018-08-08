@@ -8,10 +8,13 @@ Development ToDo List:
 *Preview-to-GUI needs to be added
 *Status Indicators need to be added
 *RAW->JPG conversion for Previews needs to be added (its in the old web branch)
+
 *Add web control
 *Dynamic Mosaic Points genenerator, given MxN Images, with H_deg horizontal overlap and V_deg vertical overlap
     -Add web UI for this
 *web UI overlay of crop
+
+* Need metadata on the webpage
 
 
 *What's up with the scripts/ folder?

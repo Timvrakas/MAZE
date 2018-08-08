@@ -40,7 +40,6 @@ class StereoCamera():
         with `LEFTNAME` or `RIGHTNAME`, it will be stored under the variable
         `cameras`
         """
-        self.context
         _cameras = self.context.camera_autodetect()
         msg = [(False, "None"), (False, "None")]
         if len(_cameras) == 0:
@@ -149,28 +148,14 @@ class StereoCamera():
         return valid_choices
 
     def set_config(self, name, value, camera_id):
-        config = self.cameras[camera_id].get_config(self.context)
+        self._set_config(name,value,self.cameras[camera_id])
+
+    def _set_config(self, name, value, camera):
+        config = camera.get_config(self.context)
         value_obj = self._get_config_obj(config, name)
         if value_obj:
             value_obj.set_value(value)
-            self.cameras[camera_id].set_config(config, self.context)
-
-    '''
-    def get_focallength(self, camera_id):
-        filename = "focallength.jpg"
-        curr_dir = os.path.dirname(os.path.realpath(__file__))
-        test_file = os.path.join(curr_dir, filename)
-        if os.path.isfile(test_file):
-            os.remove(test_file)
-
-        old_image_setting = self._get_config("imageformat", self.cameras[camera_id])
-        self.set_config("imageformat", "Small Normal JPEG", camera_id)
-
-        onboard_path = self.trigger_capture(self.cameras[camera_id])
-        test_file = self.get_image_from_camera(self.cameras[camera_id], onboard_path,
-                                               curr_dir, filename)
-
-    '''
+            camera.set_config(config, self.context)
 
     def get_specs(self, name, test_file):
         with open(test_file, 'rb') as f:
@@ -188,21 +173,13 @@ class StereoCamera():
         return focal_len
     '''
 
-    # TODO: This has to be totaly reworked...
-    def get_stats(self, camera_id=None):
+    def get_stats(self):
         stats = ['aperture', 'shutterspeed', 'iso', 'focallength']
-        stats_array = []
+        stats_dict = dict()
 
-        if camera_id is None:
-            indexes = CameraID
-        else:
-            indexes = [camera_id]
+        for camera in self.cameras:
 
-        for index in indexes:
-
-            cam = self.cameras[index]
-            stats_dict = dict()
-            logger.info("{} Camera Stats:".format(cam._camera_name))
+            logger.info("{} Camera Stats:".format(camera._camera_name))
             filename = "specs.jpg"
 
             curr_dir = os.path.dirname(os.path.realpath(__file__))
@@ -211,30 +188,46 @@ class StereoCamera():
                 os.remove(test_file)
 
             old_image_setting = self._get_config(
-                "imageformat", self.cameras[index])
+                "imageformat", camera)
 
-            self.set_config("imageformat", "Small Normal JPEG", index)
-            onboard_path = self.trigger_capture(self.cameras[index])
+            self._set_config("imageformat", "Small Normal JPEG", camera)
+
+            onboard_path = self.trigger_capture(camera)
+
 
             test_file = os.path.join(curr_dir, filename)
+
             self.get_image_from_camera(
-                self.cameras[index], onboard_path, test_file)
+                camera, onboard_path, test_file)
 
             for stat in stats:
                 if stat == 'focallength' or stat == 'shutterspeed':
                     value = self.get_specs(stat, test_file)
                 else:
-                    value = self._get_config(stat, cam)
+                    value = self._get_config(stat, camera)
                 logger.info("\t {}: {}".format(stat, value))
                 stats_dict[stat] = value
 
-            stats_array.append(stats_dict)
             os.remove(test_file)
 
-            self.set_config("imageformat", old_image_setting, index)
-        return stats_array
+            self._set_config("imageformat", old_image_setting, camera)
 
-    def capture_image(self, storage_path, filename_base=None):
+        return stats_dict
+
+    def capture_previews(self):
+        preview_paths = self.pool.map(
+            self.capture_preview_thread, self.cameras)
+        return preview_paths
+
+    def capture_preview_thread(self, camera):
+        camera_file = camera.capture_preview()
+        file_data = camera_file.get_data_and_size()
+        file_path = os.path.join('/tmp', 'preview_' + camera._camera_name + str(time.time()) +'.jpg')
+        with open(file_path, 'wb') as file:
+            file.write(file_data)
+        return file_path
+
+    def capture_images(self, storage_path, filename_base=None):
         """ Capture images on both the cameras
         The files will stored as below
             storage_path
@@ -259,11 +252,12 @@ class StereoCamera():
 
         # Spin threads to capture images
         camera_onboard_paths = self.pool.map(
-            self.trigger_capture, self.cameras)
+            self.capture_image_thread, self.cameras)
 
         logger.debug("Capture Process took: {:f} seconds.".format(
             time.time() - timer))
 
+        logger.info("Tranfering...")
         # PART TWO: transfer the images from the camera
         timer = time.time()
 
@@ -271,7 +265,6 @@ class StereoCamera():
             os.mkdir(storage_path)
 
         stored_file_paths = []
-        camera_names = []
 
         for cam in self.cameras:  # Generate filenames
             camera_dir = os.path.join(storage_path, cam._camera_name)
@@ -284,20 +277,19 @@ class StereoCamera():
             filename = cam._camera_name[0] + '_' + filename_base + file_ext
             file_path = os.path.join(camera_dir, filename)
             stored_file_paths.append(file_path)
-            camera_names.append(cam._camera_name)
 
         get_image_args = list(
             zip(*(self.cameras, camera_onboard_paths, stored_file_paths)))
 
         self.pool.starmap(
-            self.get_image_from_camera, get_image_args)
+            self.copy_image_thread, get_image_args)
 
         logger.debug("Transfer Process took: {:f} seconds.".format(
             time.time() - timer))
 
-        return list(zip(stored_file_paths, camera_names))
+        return stored_file_paths
 
-    def trigger_capture(self, camera):
+    def capture_image_thread(self, camera):
         """ Trigger image capture
         Parameters
         ----------
@@ -314,7 +306,7 @@ class StereoCamera():
             "File path: {}/{}".format(file_path.folder, file_path.name))
         return file_path
 
-    def get_image_from_camera(self, camera, camera_file_path, storage_file_path):
+    def copy_image_thread(self, camera, camera_file_path, storage_file_path):
         """ Capture image on single camera
         Parameters
         ----------

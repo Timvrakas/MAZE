@@ -41,8 +41,11 @@ class MAZE(object):
     def point(self, angle):
         self.ptu.slew_to_angle(angle)
 
-    def settings(self):
+    def get_stats(self):
         self.cam.get_stats()
+
+    def preview(self):
+        self.last_images = self.cam.capture_previews()
 
     def capture(self):
 
@@ -52,9 +55,9 @@ class MAZE(object):
         imu_data = self.imu.getData()
         ptu_angle = self.ptu.get_angle()
 
-        saved_images = self.cam.capture_image(file_path, file_name)
+        saved_images = self.cam.capture_images(file_path, file_name)
 
-        for (image_path, camera_name) in saved_images:
+        for image_path, camera_name in zip(saved_images, ('Left','Right')):
             label.create_label(image_path, camera_name, ptu_angle, imu_data)
 
         self.session.image_count(inc=True)

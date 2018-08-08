@@ -27,7 +27,10 @@ def index():
 def refresh_preview():
     maze = get_maze()
     images = maze.get_last_images()
-    return jsonify({'image_hash': hash(tuple(images))})
+    image_hash = hash(tuple(images))
+    if images is None:
+        image_hash = 0
+    return jsonify({'image_hash': image_hash})
 
 
 @app.route('/leftImg.jpg')
@@ -35,7 +38,7 @@ def leftImg():
     maze = get_maze()
     image_left, image_right = maze.get_last_images()
     if(image_left is not None):
-        return send_file(image_left[0], mimetype='image/jpeg')
+        return send_file(image_left, mimetype='image/jpeg')
     else:
         return jsonify({'image_left': image_left, 'image_right': image_right})
 
@@ -45,7 +48,7 @@ def rightImg():
     maze = get_maze()
     image_left, image_right = maze.get_last_images()
     if(image_right is not None):
-        return send_file(image_right[0], mimetype='image/jpeg')
+        return send_file(image_right, mimetype='image/jpeg')
     else:
         return jsonify({'image_left': image_left, 'image_right': image_right})
 

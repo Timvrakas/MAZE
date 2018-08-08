@@ -40,13 +40,15 @@ class Console(object):
         print(' m - To take a mosaic')
         print('-----------------------------------------------------------------')
         print(' s - To retrive camera parameters')
+        print(' v - To take a preview image')
         print('-----------------------------------------------------------------')
 
     def test_case(self, command_input):
         options = {'n': self.new_session,
                    'p': self.point,
-                   's': self.settings,
+                   's': self.get_stats,
                    'c': self.capture,
+                   'v': self.preview,
                    'm': self.mosaic,
                    'd': self.maze.disconnect,
                    'r': self.maze.connect,
@@ -63,8 +65,12 @@ class Console(object):
         return True
 
     def capture(self):
-        print('Capturing an image...')
-        saved_images = self.maze.capture()
+        print('Capturing an Image...')
+        self.maze.capture()
+
+    def preview(self):
+        print('Capturing an Preview...')
+        self.maze.preview()
 
     def pos_arr(self, pos):
         """Make an (x,2) position array from a comma seperated list.
@@ -109,10 +115,9 @@ class Console(object):
         positions = self.pos_arr(positions)
         self.maze.mosaic(positions)
 
-    def settings(self):
-        print('Setting up camera Parameters')
-        self.maze.settings()
-        print("Press `s` key if you want to get the camera parameters")
+    def get_stats(self):
+        print('Sampling Camera Parameters')
+        self.maze.get_stats()
 
     def point(self, az=None, el=None):
         if az is None and el is None:
