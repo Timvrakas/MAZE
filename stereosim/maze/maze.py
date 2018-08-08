@@ -17,6 +17,7 @@ class MAZE(object):
         self.session = session.Session("/srv/stereosim")
         self.last_images = [None, None]
         self.connected = False
+        self.img_stats = None
 
     def get_last_images(self):
         return self.last_images
@@ -42,10 +43,10 @@ class MAZE(object):
         self.ptu.slew_to_angle(angle)
 
     def get_stats(self):
-        self.cam.get_stats()
+        return self.img_stats
 
     def preview(self):
-        self.last_images = self.cam.capture_previews()
+        self.last_images, self.img_stats = self.cam.capture_previews()
 
     def capture(self):
         try:
@@ -63,7 +64,7 @@ class MAZE(object):
             logger.exception(e)
 
         try:
-            saved_images = self.cam.capture_images(file_path, file_name)
+            saved_images, img_stats = self.cam.capture_images(file_path, file_name)
         except Exception as e:
             logger.exception("Capture Failed")
             logger.exception(e)
@@ -78,7 +79,10 @@ class MAZE(object):
         self.session.image_count(inc=True)
 
         logger.info("Captured Image Pair: {}".format(saved_images))
+
         self.last_images = saved_images
+        self.img_stats = img_stats
+
         return saved_images
 
     def mosaic(self, positions):

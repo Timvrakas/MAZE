@@ -157,75 +157,41 @@ class StereoCamera():
             value_obj.set_value(value)
             camera.set_config(config, self.context)
 
-    def get_specs(self, name, test_file):
+    def read_exif(self, test_file):
         with open(test_file, 'rb') as f:
             meta = exifread.process_file(f, details=False)
 
         focal_len = '{} mm'.format(meta['EXIF FocalLength'])
-        shutterspeed = '{} seconds'.format(meta['EXIF ExposureTime'])
-        if name == 'focallength':
-            return focal_len
-        else:
-            return shutterspeed
-    '''
-        os.remove(test_file)
-        self.set_config("imageformat", old_image_setting, camera_id)
-        return focal_len
-    '''
+        shutterspeed = '{} sec'.format(meta['EXIF ExposureTime'])
+        
+        return {'focallength' : focal_len, 'shutterspeed' : shutterspeed }
 
-    def get_stats(self):
-        stats = ['aperture', 'shutterspeed', 'iso', 'focallength']
-        stats_dict = dict()
-
-        for camera in self.cameras:
-
-            logger.info("{} Camera Stats:".format(camera._camera_name))
-            filename = "specs.jpg"
-
-            curr_dir = os.path.dirname(os.path.realpath(__file__))
-            test_file = os.path.join(curr_dir, filename)
-            if os.path.isfile(test_file):
-                os.remove(test_file)
-
-            old_image_setting = self._get_config(
-                "imageformat", camera)
-
-            self._set_config("imageformat", "Small Normal JPEG", camera)
-
-            onboard_path = self.trigger_capture(camera)
-
-
-            test_file = os.path.join(curr_dir, filename)
-
-            self.get_image_from_camera(
-                camera, onboard_path, test_file)
-
-            for stat in stats:
-                if stat == 'focallength' or stat == 'shutterspeed':
-                    value = self.get_specs(stat, test_file)
-                else:
-                    value = self._get_config(stat, camera)
-                logger.info("\t {}: {}".format(stat, value))
-                stats_dict[stat] = value
-
-            os.remove(test_file)
-
-            self._set_config("imageformat", old_image_setting, camera)
+    def process_stats(self, image_path, camera):
+        stats = ['aperture','iso','imageformat']
+        stats_dict = self.read_exif(image_path)
+        for stat in stats:
+            value = self._get_config(stat, camera)
+            stats_dict[stat] = value
 
         return stats_dict
 
     def capture_previews(self):
-        preview_paths = self.pool.map(
-            self.capture_preview_thread, self.cameras)
-        return preview_paths
+        #Save current resolution setting
+        old_image_settings = []
+        for camera in self.cameras:
+            old_image_settings.append(self._get_config(
+                "imageformat", camera))
+            self._set_config("imageformat", "Small Normal JPEG", camera)
 
-    def capture_preview_thread(self, camera):
-        camera_file = camera.capture_preview()
-        file_data = camera_file.get_data_and_size()
-        file_path = os.path.join('/tmp', 'preview_' + camera._camera_name + str(time.time()) +'.jpg')
-        with open(file_path, 'wb') as file:
-            file.write(file_data)
-        return file_path
+        #Call a normal capture
+        image_paths, img_stats = self.capture_images("/tmp/","preview_" + str(time.time()))
+
+        #Restore old resolution setting
+        for camera, old_image_setting in zip(self.cameras,old_image_settings):
+            self._set_config("imageformat", old_image_setting, camera)
+
+        return image_paths, img_stats
+
 
     def capture_images(self, storage_path, filename_base=None):
         """ Capture images on both the cameras
@@ -287,7 +253,16 @@ class StereoCamera():
         logger.debug("Transfer Process took: {:f} seconds.".format(
             time.time() - timer))
 
-        return stored_file_paths
+        # PART THREE: Extract Stats from Camera and EXIF
+        timer = time.time()
+
+        stats_args = zip(stored_file_paths,self.cameras) #args to call process_stats()
+        image_stats = self.pool.starmap(self.process_stats,stats_args) #thread process_stats()
+
+        logger.debug("Stats Extraction took: {:f} seconds.".format(
+            time.time() - timer))
+
+        return stored_file_paths, image_stats
 
     def capture_image_thread(self, camera):
         """ Trigger image capture

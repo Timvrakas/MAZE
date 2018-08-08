@@ -39,7 +39,7 @@ class Console(object):
         print(' b - To take a bunch of pictures at one PTU direction')
         print(' m - To take a mosaic')
         print('-----------------------------------------------------------------')
-        print(' s - To retrive camera parameters')
+        print(' s - To print most recent camera parameters')
         print(' v - To take a preview image')
         print('-----------------------------------------------------------------')
 
@@ -118,34 +118,38 @@ class Console(object):
         self.maze.mosaic(positions)
 
     def get_stats(self):
-        print('Sampling Camera Parameters')
-        self.maze.get_stats()
+        print('Camera Parameters:')
+        stats = self.maze.get_stats()
+        if stats is None:
+            print("No Stats Available, Please use 'c' or 'v' to capture an image")
+        else:
+            print(stats)
 
     def point(self, az=None, el=None):
         try:
-        if az is None and el is None:
-            az = int(input('Enter Azimuth: '))
-            el = int(input('Enter Elevation: '))
-        elif az is None and el is not None:
-            el = el
-            az = int(input('Elevation : {} \n Enter Azimuth: '.format(el)))
-        elif az is not None and el is None:
-            az = az
-            el = int(input('Azimuth : {} \n Enter Elevation: '.format(az)))
+            if az is None and el is None:
+                az = int(input('Enter Azimuth: '))
+                el = int(input('Enter Elevation: '))
+            elif az is None and el is not None:
+                el = el
+                az = int(input('Elevation : {} \n Enter Azimuth: '.format(el)))
+            elif az is not None and el is None:
+                az = az
+                el = int(input('Azimuth : {} \n Enter Elevation: '.format(az)))
         except ValueError:
             logger.error("Value Input Error")
         else:
-        self.maze.point((az, el))
+            self.maze.point((az, el))
 
     def bulk(self):
         # take  a bunch of pictures
         try:
             amount = input("Input the number of images you want to take: ")
-        num = int(amount)
+            num = int(amount)
         except ValueError:
             logger.error("Value Input Error")
         else:
-        self.maze.bulk(num)
+            self.maze.bulk(num)
 
     def new_session(self):
         no = self.maze.new_session()
