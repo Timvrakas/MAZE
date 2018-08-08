@@ -132,12 +132,13 @@ class StereoCalibration(object):
         rot_right, _ = cv2.Rodrigues(self.r2[0])
 
         camera_model = dict([('M1', M1), ('M2', M2), ('dist1', d1),
-                            ('dist2', d2), ('rot_left', rot_left),
-                            ('rot_right', rot_right), ('R', R), ('T', T),
-                            ('E', E), ('F', F)])
+                             ('dist2', d2), ('rot_left', rot_left),
+                             ('rot_right', rot_right), ('R', R), ('T', T),
+                             ('E', E), ('F', F)])
 
         # cv2.destroyAllWindows()
         return camera_model
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

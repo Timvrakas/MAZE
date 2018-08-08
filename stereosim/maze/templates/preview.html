@@ -1,0 +1,125 @@
+{% extends "layout.html" %} {% block body %}
+
+<script type="text/javascript">
+    var images = 1134891045;
+    $(function () { //setup function
+
+        setInterval(refreshPreview, 500);
+        setInterval(refreshStats, 500);
+
+        document.addEventListener('click', function (event) {//Redirects to image file server
+            var target = event.target;
+            if (target.tagName.toLowerCase() == 'a') {
+                var port = target.getAttribute('href').match(/^:(\d+)(.*)/);
+                if (port) {
+                    target.href = port[2];
+                    target.port = port[1];
+                }
+            }
+        }, false);
+
+        function refreshPreview() {
+            $.ajax({
+                url: '/refresh_preview',
+                type: 'POST',
+                success: function (response) {
+                    if (response.image_hash != images) {
+                        loadImage();
+                        images = response.image_hash
+                    }
+                },
+                error: function (error) {
+                    console.log(error);
+                }
+            });
+        }
+
+        function refreshStats() {
+            $.ajax({
+                url: '/get_stats',
+                type: 'POST',
+                success: function (response) {
+                    if (response['stats'] != null) {
+                        left_stats = response.stats[0]
+                        right_stats = response.stats[1]
+                        document.getElementById("f_Left").innerHTML = left_stats['focallength']
+                        document.getElementById("f_Right").innerHTML = right_stats['focallength']
+                        document.getElementById("Ap_Left").innerHTML = left_stats['aperture']
+                        document.getElementById("Ap_Right").innerHTML = right_stats['aperture']
+                        document.getElementById("format_Left").innerHTML = left_stats['imageformat']
+                        document.getElementById("format_Right").innerHTML = right_stats['imageformat']
+                        document.getElementById("ISO_Left").innerHTML = left_stats['iso']
+                        document.getElementById("ISO_Right").innerHTML = right_stats['iso']
+                        document.getElementById("SS_Left").innerHTML = left_stats['shutterspeed']
+                        document.getElementById("SS_Right").innerHTML = right_stats['shutterspeed']
+                    }
+                },
+                error: function (error) {
+                    console.log(error);
+                }
+            });
+        }
+
+        function showLoading() {//sets images to loading GIF
+            document.getElementById("leftImage").src = "/static/loading.gif";
+            document.getElementById("rightImage").src = "/static/loading.gif";
+        }
+
+        function loadImage() {//sets images to new image file locations
+            showLoading();
+            var leftImage = new Image();
+            var rightImage = new Image();
+            leftImage.onload = function () {
+                document.getElementById("leftImage").src = this.src;
+            };
+            rightImage.onload = function () {
+                document.getElementById("rightImage").src = this.src;
+            };
+            leftImage.src = "/leftImg.jpg?" + Date.now();
+            rightImage.src = "/rightImg.jpg?" + Date.now();
+        }
+    });
+</script>
+<h1>MAZE Capture Interface</h1>
+<div>
+    <img src="/static/white.jpg" id="leftImage" style="height: 300px">
+    <img src="/static/white.jpg" id="rightImage" style="height: 300px">
+</div>
+<a href=":80/stereosim" target="_blank">View Captured Images</a>
+<div>
+    <table>
+        <tr>
+            <th></th>
+            <th>Left</th>
+            <th>Right</th>
+        </tr>
+        <tr>
+            <th>Focal Length</th>
+            <td id="f_Left">0</td>
+            <td id="f_Right">0</td>
+        </tr>
+        <tr>
+            <th>Aperture</th>
+            <td id="Ap_Left">0</td>
+            <td id="Ap_Right">0</td>
+        </tr>
+        <tr>
+            <th>SS</th>
+            <td id="SS_Left">0</td>
+            <td id="SS_Right">0</td>
+        </tr>
+        <tr>
+            <th>ISO</th>
+            <td id="ISO_Left">0</td>
+            <td id="ISO_Right">0</td>
+        </tr>
+        <tr>
+            <th>Format</th>
+            <td id="format_Left">0</td>
+            <td id="format_Right">0</td>
+        </tr>
+    </table>
+</div>
+
+
+{% endblock %}
